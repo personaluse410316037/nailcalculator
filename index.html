@@ -143,8 +143,12 @@
         <div id="nextMenu" class="button-grid" style="display: none;">
             <button class="confirm" onclick="goNext()">下一步</button>
         </div>
+        <div class="button-grid" id="navButtons" style="display: none;">
+            <button class="back-home" onclick="goBack()">上一頁</button>
+            <button class="back-home" onclick="goHome()">回首頁</button>
+        </div>
         <div class="button-grid" id="mainButtons" style="display: block;">
-            <button class="back-home" onclick="goBack()">上一步</button>
+            <button class="back-home" onclick="goBack()">上一頁</button>
             <button class="back-home" onclick="goHome()">回首頁</button>
             <button class="confirm" onclick="confirmOrder()">確認訂單</button>
             <button class="clear" onclick="clearOrder()">清空訂單</button>
@@ -207,8 +211,8 @@
                 }, nextStep: 'style' }
             ],
             extend: [
-                { name: '不要延長指甲', price: 0, nextStep: 'soak' },
-                { name: '要延長指甲', price: 10, quantity: true, nextStep: 'soak' }
+                { name: '不要延長指甲', price: 0 },
+                { name: '要延長指甲', price: 10, quantity: true }
             ],
             soak: [
                 { name: '不要浸腳', price: 0 },
@@ -221,10 +225,12 @@
             hideAll();
             document.getElementById(`${category}Menu`).style.display = 'grid';
             renderMenu(category);
-            if (category !== 'mainMenu') {
-                document.getElementById('mainButtons').style.display = 'none';
-            } else {
+            if (category === 'mainMenu') {
                 document.getElementById('mainButtons').style.display = 'grid';
+                document.getElementById('navButtons').style.display = 'none';
+            } else {
+                document.getElementById('mainButtons').style.display = 'none';
+                document.getElementById('navButtons').style.display = 'grid';
             }
         }
 
@@ -267,6 +273,22 @@
             if (step === 'style') {
                 document.getElementById('styleMenu').style.display = 'grid';
                 renderStyleMenu(category);
+            } else if (step === 'extend') {
+                gelProcess[step].forEach(option => {
+                    const btn = document.createElement('button');
+                    let price = option.price;
+                    btn.textContent = option.name + (price ? ` +$${price}` : '');
+                    btn.onclick = () => {
+                        if (option.quantity) {
+                            showQuantitySubMenu(option, category, currentService);
+                        } else {
+                            let totalPrice = currentService.price + price;
+                            addToOrder(`${currentService.name} - ${option.name}`, totalPrice, 1, category);
+                            goHome();
+                        }
+                    };
+                    subMenu.appendChild(btn);
+                });
             } else {
                 gelProcess[step].forEach(option => {
                     const btn = document.createElement('button');
@@ -280,7 +302,9 @@
                             addToOrder(`${currentService.name} - ${option.name}`, totalPrice, 1, category);
                             currentStep++;
                             const nextStep = option.nextStep;
-                            if (nextStep && (category === 'gelFoot' || (category === 'gelHand' && nextStep !== 'soak'))) {
+                            if (nextStep && (category === 'gelFoot' && nextStep === 'soak')) {
+                                showGelStep(category, nextStep);
+                            } else if (nextStep && category === 'gelHand') {
                                 showGelStep(category, nextStep);
                             } else {
                                 goHome();
@@ -330,6 +354,7 @@
                     } else {
                         addToOrder(option.name, option.price, 1, currentCategory, option.note);
                         if (option.note) alert(option.note);
+                        goHome();
                     }
                 };
                 subMenu.appendChild(btn);
@@ -350,17 +375,26 @@
             if (service.prices && service.prices.within7 !== undefined) {
                 const btnWithin7 = document.createElement('button');
                 btnWithin7.textContent = '7 日內免費補';
-                btnWithin7.onclick = () => addToOrder(`${service.name}（7 日內）`, 0, input.value, category);
+                btnWithin7.onclick = () => {
+                    addToOrder(`${service.name}（7 日內）`, 0, input.value, category);
+                    goHome();
+                };
                 subMenu.appendChild(btnWithin7);
 
                 const btnAfter7 = document.createElement('button');
                 btnAfter7.textContent = `超過 7 日 $30/隻`;
-                btnAfter7.onclick = () => addToOrder(`${service.name}（超過 7 日）`, 30 * input.value, input.value, category);
+                btnAfter7.onclick = () => {
+                    addToOrder(`${service.name}（超過 7 日）`, 30 * input.value, input.value, category);
+                    goHome();
+                };
                 subMenu.appendChild(btnAfter7);
 
                 const btnNonShop = document.createElement('button');
                 btnNonShop.textContent = `非本店 $50/隻`;
-                btnNonShop.onclick = () => addToOrder(`${service.name}（非本店）`, 50 * input.value, input.value, category);
+                btnNonShop.onclick = () => {
+                    addToOrder(`${service.name}（非本店）`, 50 * input.value, input.value, category);
+                    goHome();
+                };
                 subMenu.appendChild(btnNonShop);
             } else {
                 const btn = document.createElement('button');
@@ -377,14 +411,8 @@
                         addToOrder(`${parentService ? parentService.name : currentService} - ${service.name}`, service.price * input.value, input.value, category);
                         if (currentStep === 3) {
                             document.getElementById('styleMenu').style.display = 'grid';
-                        } else if (currentStep > 0) {
-                            currentStep++;
-                            const nextStep = gelProcess[Object.keys(gelProcess)[currentStep - 1]].find(o => o.name === service.name)?.nextStep;
-                            if (nextStep) {
-                                showGelStep(category, nextStep);
-                            } else {
-                                goHome();
-                            }
+                        } else {
+                            goHome();
                         }
                     }
                 };
@@ -500,6 +528,7 @@
             document.getElementById('styleMenu').style.display = 'none';
             document.getElementById('nextMenu').style.display = 'none';
             document.getElementById('historyList').style.display = 'none';
+            document.getElementById('navButtons').style.display = 'none';
             document.getElementById('mainButtons').style.display = 'none';
         }
     </script>
