@@ -32,7 +32,7 @@
         }
         .button-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            grid-template-columns: repeat(3, 1fr); /* 強制每行三個 */
             gap: 15px;
             margin: 20px 0;
         }
@@ -52,6 +52,7 @@
             justify-content: center;
             text-align: center;
             transition: background-color 0.2s;
+            min-width: 100px; /* 確保最小寬度 */
         }
         button:hover {
             background-color: #f06292;
@@ -111,12 +112,13 @@
         }
         @media (max-width: 600px) {
             .button-grid {
-                grid-template-columns: 1fr;
+                grid-template-columns: repeat(3, 1fr); /* 手機上仍保持三列 */
             }
             button {
                 width: 100%;
-                height: 80px; /* 手機上稍小 */
+                height: 80px; /* 手機上適應屏幕 */
                 font-size: 14px;
+                min-width: 0; /* 允許縮放 */
             }
             .container {
                 padding: 10px;
@@ -138,7 +140,7 @@
         <div id="footMenu" class="button-grid" style="display: none;"></div>
         <div id="eyelashMenu" class="button-grid" style="display: none;"></div>
         <div id="styleMenu" class="button-grid" style="display: none;"></div>
-        <div id="subMenu" class="button-grid" id="sfMenu" style="display: none;"></div>
+        <div id="subMenu" class="button-grid" style="display: none;"></div>
         <div class="button-grid">
             <button class="back-home" onclick="goBack()">上一步</button>
             <button class="back-home" onclick="goHome()">回首頁</button>
