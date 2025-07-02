@@ -59,10 +59,13 @@
       color: #333;
     }
     .detail-item {
+      display: block;
       text-align: right; /* 細項和數字置右 */
     }
     .note {
-      font-size: 1.4em; /* 括號內容小一號 */
+      font-size: 0.8em; /* 括號內容小一號 */
+      display: block;
+      text-align: right; /* 括號內容置右 */
     }
     .container {
       background-color: white;
@@ -147,7 +150,7 @@
   </table>
 
   <script>
-    // 初始化記錄（從 localStorage 或 Google Sheets 載入）
+    // 初始化記錄（從 localStorage 載入）
     let records = JSON.parse(localStorage.getItem('nailRecords')) || [];
     renderRecords();
 
@@ -205,7 +208,7 @@
         // 無疊加優惠，全部附加服務費用相加
         addOnFees.forEach(item => {
           total += item.fee;
-          explanation += `<span class="detail-item">${item.name} $${item.fee}</span><br>`;
+          explanation += `<span class="detail-item Adult: 1, Child: 2">${item.name} $${item.fee}</span><br>`;
         });
       }
 
@@ -242,52 +245,10 @@
         explanation: window.currentResult.explanation.replace(/<br>/g, '\n').replace(/<\/?span[^>]*>/g, '')
       };
 
-      // 提交到 Google Forms
-      submitToGoogleForm(record);
-
-      // 本地記錄（臨時，待 Google Sheets 同步）
+      // 添加到本地記錄
       records.push(record);
       localStorage.setItem('nailRecords', JSON.stringify(records));
       renderRecords();
-
-      // 從 Google Sheets 重新載入記錄
-      loadRecordsFromGoogleSheets();
-    }
-
-    function submitToGoogleForm(record) {
-      const formUrl = "你的 Google Forms 預填寫 URL"; // 需替換為實際 URL
-      const formData = new FormData();
-      formData.append("entry.你的日期欄位ID", record.date); // 替換為 Google Forms 的日期欄位 ID
-      formData.append("entry.你的明細欄位ID", record.explanation); // 替換為 Google Forms 的明細欄位 ID
-
-      fetch(formUrl, {
-        method: "POST",
-        body: formData,
-        mode: "no-cors" // Google Forms 不需要跨域回應
-      }).then(() => {
-        console.log("記錄已提交到 Google Forms");
-      }).catch(error => {
-        console.error("提交失敗:", error);
-        alert("提交到 Google Forms 失敗，請檢查表單設置");
-      });
-    }
-
-    function loadRecordsFromGoogleSheets() {
-      const sheetUrl = "你的 Google Sheets JSON 端點"; // 需替換為實際 URL
-      fetch(sheetUrl)
-        .then(response => response.json())
-        .then(data => {
-          records = data.values.slice(1).map(row => ({
-            date: row[0], // 第一列為日期
-            explanation: row[1] // 第二列為收費明細
-          }));
-          localStorage.setItem('nailRecords', JSON.stringify(records));
-          renderRecords();
-        })
-        .catch(error => {
-          console.error("載入 Google Sheets 失敗:", error);
-          alert("無法載入記錄，請檢查 Google Sheets 設置");
-        });
     }
 
     function renderRecords() {
@@ -308,33 +269,12 @@
     function deleteRecord(index) {
       if (confirm("確定要刪除這條記錄嗎？")) {
         if (confirm("請再次確認，刪除後無法恢復！")) {
-          // 從 Google Sheets 刪除（透過 Google Apps Script）
-          deleteFromGoogleSheets(index);
-          
-          // 本地刪除
           records.splice(index, 1);
           localStorage.setItem('nailRecords', JSON.stringify(records));
           renderRecords();
         }
       }
     }
-
-    function deleteFromGoogleSheets(index) {
-      const scriptUrl = "你的 Google Apps Script 刪除端點"; // 需替換為實際 URL
-      fetch(scriptUrl, {
-        method: "POST",
-        body: JSON.stringify({ row: index + 2 }), // Google Sheets 行數從 2 開始（跳過標題）
-        headers: { "Content-Type": "application/json" }
-      }).then(() => {
-        console.log("從 Google Sheets 刪除成功");
-      }).catch(error => {
-        console.error("刪除失敗:", error);
-        alert("從 Google Sheets 刪除失敗，請檢查 Apps Script 設置");
-      });
-    }
-
-    // 頁面載入時從 Google Sheets 載入記錄
-    window.onload = loadRecordsFromGoogleSheets;
   </script>
 </body>
 </html>
