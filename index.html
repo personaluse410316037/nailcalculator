@@ -52,6 +52,11 @@
         .history {
             background-color: #ff9800;
         }
+        .delete {
+            background-color: #f44336;
+            padding: 8px;
+            font-size: 14px;
+        }
         input[type="number"] {
             width: 60px;
             padding: 5px;
@@ -63,6 +68,13 @@
             padding: 10px;
             background-color: #fff;
             border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .history-item {
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-bottom: 10px;
+            background-color: #fff;
             border-radius: 5px;
         }
         @media (max-width: 600px) {
@@ -86,7 +98,8 @@
             <button onclick="showCategory('eyelash')">眼睫毛</button>
             <button onclick="showCategory('style')">款式</button>
         </div>
-        <div id="handMenu" class="button-grid" style="display: none;"></div>
+        <div id="handMenu" class="button-grid"
+        style="display: none;"></div>
         <div id="footMenu" class="button-grid" style="display: none;"></div>
         <div id="eyelashMenu" class="button-grid" style="display: none;"></div>
         <div id="styleMenu" class="button-grid" style="display: none;"></div>
@@ -110,8 +123,8 @@
 
         const services = {
             hand: [
-                { name: 'Soft Gel', prices: { noRemove: 150, remove: 200 } },
-                { name: 'Hard Gel', prices: { noRemove: 188, remove: 218 }, extendable: true },
+                { name: 'Soft Gel', prices: { noRemove: 150, remove: 200 }, hasRemove: true },
+                { name: 'Hard Gel', prices: { noRemove: 188, remove: 218 }, hasRemove: true, extendable: true },
                 { name: '修手（無 Gel，純浸水）', price: 80 },
                 { name: '純卸甲', price: 80 },
                 { name: '卸甲後護理', price: 160 },
@@ -120,8 +133,8 @@
                 { name: '延長指甲（Hard Gel）', price: 10, quantity: true }
             ],
             foot: [
-                { name: 'Soft Gel', prices: { noRemove: 188, remove: 238 } },
-                { name: 'Hard Gel', prices: { noRemove: 258, remove: 258 }, extendable: true },
+                { name: 'Soft Gel', prices: { noRemove: 188, remove: 238 }, hasRemove: true },
+                { name: 'Hard Gel', prices: { noRemove: 258, remove: 258 }, hasRemove: true, extendable: true },
                 { name: '修腳（無 Gel，純浸水）', price: 198 },
                 { name: '修腳（不浸水）/卸甲後護理', price: 120 },
                 { name: '純卸甲', price: 100 },
@@ -168,10 +181,14 @@
                 btn.textContent = service.name;
                 btn.onclick = () => {
                     currentService = service.name;
-                    if (service.prices) {
+                    if (service.prices && service.hasRemove) {
                         showSubMenu(service);
+                    } else if (service.prices && service.quantity) {
+                        showQuantitySubMenu(service);
                     } else if (service.subOptions) {
                         showEyelashSubMenu(service.subOptions);
+                    } else if (service.quantity) {
+                        showQuantitySubMenu(service);
                     } else {
                         addToOrder(service.name, service.price, 1, category);
                     }
@@ -195,27 +212,6 @@
                 btnRemove.textContent = `需卸甲 $${service.prices.remove}`;
                 btnRemove.onclick = () => addToOrder(`${service.name}（需卸甲）`, service.prices.remove, 1, currentCategory);
                 subMenu.appendChild(btnRemove);
-            } else if (service.prices.within7 !== undefined) {
-                const btnWithin7 = document.createElement('button');
-                btnWithin7.textContent = '7 日內免費補';
-                btnWithin7.onclick = () => addToOrder(`${service.name}（7 日內）`, 0, 1, currentCategory);
-                subMenu.appendChild(btnWithin7);
-
-                const input = document.createElement('input');
-                input.type = 'number';
-                input.min = 1;
-                input.value = 1;
-                subMenu.appendChild(input);
-
-                const btnAfter7 = document.createElement('button');
-                btnAfter7.textContent = `超過 7 日 $30/隻`;
-                btnAfter7.onclick = () => addToOrder(`${service.name}（超過 7 日）`, 30 * input.value, input.value, currentCategory);
-                subMenu.appendChild(btnAfter7);
-
-                const btnNonShop = document.createElement('button');
-                btnNonShop.textContent = `非本店 $50/隻`;
-                btnNonShop.onclick = () => addToOrder(`${service.name}（非本店）`, 50 * input.value, input.value, currentCategory);
-                subMenu.appendChild(btnNonShop);
             }
         }
 
@@ -235,6 +231,48 @@
             });
         }
 
+        function showQuantitySubMenu(service) {
+            hideAll();
+            const subMenu = document.getElementById('subMenu');
+            subMenu.style.display = 'grid';
+            subMenu.innerHTML = '';
+            const input = document.createElement('input');
+            input.type = 'number';
+            input.min = 1;
+            input.value = 1;
+            subMenu.appendChild(input);
+
+            if (service.prices && service.prices.within7 !== undefined) {
+                const btnWithin7 = document.createElement('button');
+                btnWithin7.textContent = '7 日內免費補';
+                btnWithin7.onclick = () => addToOrder(`${service.name}（7 日內）`, 0, input.value, currentCategory);
+                subMenu.appendChild(btnWithin7);
+
+                const btnAfter7 = document.createElement('button');
+                btnAfter7.textContent = `超過 7 日 $30/隻`;
+                btnAfter7.onclick = () => addToOrder(`${service.name}（超過 7 日）`, 30 * input.value, input.value, currentCategory);
+                subMenu.appendChild(btnAfter7);
+
+                const btnNonShop = document.createElement('button');
+                btnNonShop.textContent = `非本店 $50/隻`;
+                btnNonShop.onclick = () => addToOrder(`${service.name}（非本店）`, 50 * input.value, input.value, currentCategory);
+                subMenu.appendChild(btnNonShop);
+            } else {
+                const btn = document.createElement('button');
+                btn.textContent = `確認 ${service.name} $${service.price}/單位`;
+                btn.onclick = () => {
+                    if (service.confirm) {
+                        if (confirm('雙色漸變價格為 $80，是否確認？')) {
+                            addToOrder(service.name, service.price * input.value, input.value, currentCategory);
+                        }
+                    } else {
+                        addToOrder(service.name, service.price * input.value, input.value, currentCategory);
+                    }
+                };
+                subMenu.appendChild(btn);
+            }
+        }
+
         function addToOrder(item, price, quantity, category, note = '') {
             currentTotal += price;
             currentOrder.push({ item, price, quantity, category, note });
@@ -252,13 +290,15 @@
         function confirmOrder() {
             if (currentOrder.length) {
                 history.push({
-                    date: new Date().toLocaleString(),
+                    date: new Date().toLocaleString('zh-HK'),
                     services: [...currentOrder],
                     total: currentTotal
                 });
                 localStorage.setItem('orderHistory', JSON.stringify(history));
                 clearOrder();
                 alert('訂單已確認！');
+            } else {
+                alert('請選擇至少一項服務！');
             }
         }
 
@@ -275,18 +315,29 @@
             historyList.style.display = 'block';
             historyList.innerHTML = '<h3>歷史記錄</h3>' + (history.length ? 
                 history.map((order, index) => `
-                    <div style="border: 1px solid #ddd; padding: 10px; margin-bottom: 10px;">
+                    <div class="history-item">
                         <strong>訂單 ${index + 1} - ${order.date}</strong><br>
                         ${order.services.map(s => `${s.item} x${s.quantity} $${s.price} ${s.note || ''}`).join('<br>')}<br>
-                        <strong>總金額: $${order.total}</strong>
+                        <strong>總金額: $${order.total}</strong><br>
+                        <button class="delete" onclick="deleteOrder(${index})">刪除</button>
                     </div>
                 `).join('') : '無歷史記錄');
+        }
+
+        function deleteOrder(index) {
+            if (confirm('確定刪除此訂單？')) {
+                history.splice(index, 1);
+                localStorage.setItem('orderHistory', JSON.stringify(history));
+                showHistory();
+            }
         }
 
         function goBack() {
             if (document.getElementById('subMenu').style.display === 'grid') {
                 hideAll();
                 document.getElementById(`${currentCategory}Menu`).style.display = 'grid';
+            } else if (document.getElementById('historyList').style.display === 'block') {
+                goHome();
             } else {
                 goHome();
             }
