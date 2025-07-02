@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>美甲收費計算機</title>
+</head>
+<body>
+  <h1>美甲收費計算機</h1>
+  <label>選擇服務：</label>
+  <select id="service">
+    <option value="basic">基礎美甲 ($100)</option>
+    <option value="gel">凝膠甲 ($150)</option>
+  </select><br>
+  <label><input type="checkbox" id="complex"> 複雜彩繪 (+$20)</label><br>
+  <button onclick="calculate()">計算</button>
+  <p id="result"></p>
+  <p id="explanation"></p>
+
+  <script>
+    function calculate() {
+      let total = 0;
+      let explanation = "收費明細：";
+      let service = document.getElementById("service").value;
+      let complex = document.getElementById("complex").checked;
+
+      if (service == "basic") {
+        total = 100;
+        explanation += "基礎美甲 $100";
+      } else if (service == "gel") {
+        total = 150;
+        explanation += "凝膠甲 $150";
+      }
+      if (complex) {
+        total += 20;
+        explanation += ", 複雜彩繪 $20";
+      }
+
+      document.getElementById("result").innerText = "總計: $" + total;
+      document.getElementById("explanation").innerText = explanation;
+    }
+  </script>
+</body>
+</html>
