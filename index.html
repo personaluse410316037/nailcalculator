@@ -163,12 +163,12 @@
 
         const services = {
             gelHand: [
-                { name: 'Soft Gel (手)', nextStep: 'remove', price: 150 },
-                { name: 'Hard Gel (手)', nextStep: 'remove', price: 188 }
+                { name: 'Soft Gel (手)', price: 150, nextStep: 'remove' },
+                { name: 'Hard Gel (手)', price: 188, nextStep: 'remove' }
             ],
             gelFoot: [
-                { name: 'Soft Gel (腳)', nextStep: 'remove', price: 188 },
-                { name: 'Hard Gel (腳)', nextStep: 'remove', price: 258 }
+                { name: 'Soft Gel (腳)', price: 188, nextStep: 'remove' },
+                { name: 'Hard Gel (腳)', price: 258, nextStep: 'remove' }
             ],
             other: [
                 { name: '卸', subOptions: [
@@ -276,7 +276,7 @@
                         if (option.quantity) {
                             showQuantitySubMenu(option, category, currentService);
                         } else {
-                            let totalPrice = currentService.basePrice + price;
+                            let totalPrice = currentService.price + price;
                             addToOrder(`${currentService.name} - ${option.name}`, totalPrice, 1, category);
                             currentStep++;
                             const nextStep = option.nextStep;
