@@ -85,6 +85,13 @@
         .confirm:hover {
             background-color: #388E3C;
         }
+        .next {
+            background-color: #4CAF50;
+            color: white; /* 保留白色文字 */
+        }
+        .next:hover {
+            background-color: #388E3C;
+        }
         input[type="number"] {
             width: 80px;
             padding: 8px;
@@ -138,10 +145,12 @@
         <div id="gelHandMenu" class="button-grid" style="display: none;"></div>
         <div id="gelFootMenu" class="button-grid" style="display: none;"></div>
         <div id="otherMenu" class="button-grid" style="display: none;"></div>
-        <div id="subMenu" class="button-grid" style="display: none;"></div>
+        <div id="removeMenu" class="button-grid" style="display: none;"></div>
         <div id="styleMenu" class="button-grid" style="display: none;"></div>
+        <div id="extendMenu" class="button-grid" style="display: none;"></div>
+        <div id="soakMenu" class="button-grid" style="display: none;"></div>
         <div id="nextMenu" class="button-grid" style="display: none;">
-            <button class="confirm" onclick="goNext()">下一步</button>
+            <button class="next" onclick="goNext()">下一頁</button>
         </div>
         <div class="button-grid" id="navButtons" style="display: none;">
             <button class="back-home" onclick="goBack()">上一頁</button>
@@ -162,17 +171,16 @@
         let currentOrder = [];
         let currentCategory = '';
         let currentService = '';
-        let currentStep = 0; // 跟踪 Gel 手/腳的流程步驟
         let history = JSON.parse(localStorage.getItem('orderHistory')) || [];
 
         const services = {
             gelHand: [
-                { name: 'Soft Gel (手)', price: 150, nextStep: 'remove' },
-                { name: 'Hard Gel (手)', price: 188, nextStep: 'remove' }
+                { name: 'Soft Gel (手)', price: 150 },
+                { name: 'Hard Gel (手)', price: 188 }
             ],
             gelFoot: [
-                { name: 'Soft Gel (腳)', price: 188, nextStep: 'remove' },
-                { name: 'Hard Gel (腳)', price: 258, nextStep: 'remove' }
+                { name: 'Soft Gel (腳)', price: 188 },
+                { name: 'Hard Gel (腳)', price: 258 }
             ],
             other: [
                 { name: '卸', subOptions: [
@@ -205,21 +213,18 @@
 
         const gelProcess = {
             remove: [
-                { name: '不要卸甲', price: 0, nextStep: 'style' },
+                { name: '不要卸甲', price: 0 },
                 { name: '要卸甲', price: function(service) {
                     return service.name.includes('Soft Gel') ? 50 : (service.name.includes('Hard Gel') && service.name.includes('手') ? 30 : 0);
-                }, nextStep: 'style' }
-            ],
-            style: [
-                { name: '選擇款式', price: 0, nextStep: 'extend' } // 臨時占位，觸發款式頁
+                } }
             ],
             extend: [
                 { name: '不要延長指甲', price: 0 },
                 { name: '要延長指甲', price: 10, quantity: true }
             ],
             soak: [
-                { name: '不要浸腳', price: 0, nextStep: 'extend' },
-                { name: '要浸腳', price: 100, nextStep: 'extend' }
+                { name: '不要浸腳', price: 0 },
+                { name: '要浸腳', price: 100 }
             ]
         };
 
@@ -234,6 +239,7 @@
             } else {
                 document.getElementById('mainButtons').style.display = 'none';
                 document.getElementById('navButtons').style.display = 'grid';
+                document.getElementById('nextMenu').style.display = 'grid';
             }
         }
 
@@ -246,8 +252,7 @@
                     btn.textContent = service.name;
                     btn.onclick = () => {
                         currentService = service;
-                        currentStep = 1; // 開始流程
-                        showGelStep(category, service.nextStep);
+                        showRemoveMenu(category);
                     };
                     menu.appendChild(btn);
                 });
@@ -268,72 +273,112 @@
             }
         }
 
-        function showGelStep(category, step) {
+        function showRemoveMenu(category) {
             hideAll();
-            const subMenu = document.getElementById('subMenu');
-            subMenu.style.display = 'grid';
-            subMenu.innerHTML = '';
-            if (step === 'style') {
-                document.getElementById('styleMenu').style.display = 'grid';
-                renderStyleMenu(category);
-            } else {
-                gelProcess[step].forEach(option => {
-                    const btn = document.createElement('button');
-                    let price = typeof option.price === 'function' ? option.price(currentService) : option.price;
-                    btn.textContent = option.name + (price ? ` +$${price}` : '');
-                    btn.onclick = () => {
-                        if (option.quantity) {
-                            showQuantitySubMenu(option, category, currentService);
-                        } else {
-                            let totalPrice = currentService.price + price;
-                            addToOrder(`${currentService.name} - ${option.name}`, totalPrice, 1, category);
-                            currentStep++;
-                            const nextStep = option.nextStep;
-                            if (nextStep) {
-                                if (nextStep === 'style') {
-                                    showGelStep(category, nextStep);
-                                } else if (category === 'gelHand' && nextStep === 'extend') {
-                                    showGelStep(category, nextStep);
-                                } else if (category === 'gelFoot' && nextStep === 'soak') {
-                                    showGelStep(category, nextStep);
-                                } else if (category === 'gelFoot' && nextStep === 'extend') {
-                                    showGelStep(category, nextStep);
-                                } else {
-                                    goHome();
-                                }
-                            } else {
-                                goHome();
-                            }
-                        }
-                    };
-                    subMenu.appendChild(btn);
-                });
-            }
+            const menu = document.getElementById('removeMenu');
+            menu.style.display = 'grid';
+            menu.innerHTML = '';
+            gelProcess.remove.forEach(option => {
+                const btn = document.createElement('button');
+                let price = typeof option.price === 'function' ? option.price(currentService) : option.price;
+                btn.textContent = option.name + (price ? ` +$${price}` : '');
+                btn.onclick = () => {
+                    let totalPrice = currentService.price + price;
+                    addToOrder(`${currentService.name} - ${option.name}`, totalPrice, 1, category);
+                    showStyleMenu(category);
+                };
+                menu.appendChild(btn);
+            });
+            document.getElementById('navButtons').style.display = 'grid';
+            document.getElementById('nextMenu').style.display = 'grid';
         }
 
-        function renderStyleMenu(category) {
+        function showStyleMenu(category) {
+            hideAll();
             const menu = document.getElementById('styleMenu');
+            menu.style.display = 'grid';
             menu.innerHTML = '';
             services.style.forEach(style => {
-                const btn = document.createElement('button');
-                btn.textContent = style.name + (style.price ? ` +$${style.price}` : '');
-                btn.onclick = () => {
-                    if (style.quantity) {
-                        showQuantitySubMenu(style, category, currentService);
-                    } else if (style.confirm) {
+                if (style.quantity) {
+                    const input = document.createElement('input');
+                    input.type = 'number';
+                    input.min = 1;
+                    input.value = 1;
+                    input.style.display = 'inline-block';
+                    const btn = document.createElement('button');
+                    btn.textContent = `${style.name} +$${style.price}/單位`;
+                    btn.onclick = () => {
+                        addToOrder(`${currentService.name} - ${style.name}`, style.price * input.value, input.value, category);
+                        menu.style.display = 'grid'; // 留在款式頁
+                    };
+                    menu.appendChild(input);
+                    menu.appendChild(btn);
+                } else if (style.confirm) {
+                    const btn = document.createElement('button');
+                    btn.textContent = style.name + ` +$${style.price}`;
+                    btn.onclick = () => {
                         if (confirm('雙色漸變價格為 $80，是否確認？')) {
                             addToOrder(`${currentService.name} - ${style.name}`, style.price, 1, category);
-                            document.getElementById('styleMenu').style.display = 'grid';
+                            menu.style.display = 'grid';
                         }
-                    } else {
+                    };
+                    menu.appendChild(btn);
+                } else {
+                    const btn = document.createElement('button');
+                    btn.textContent = style.name + (style.price ? ` +$${style.price}` : '');
+                    btn.onclick = () => {
                         addToOrder(`${currentService.name} - ${style.name}`, style.price, 1, category);
-                        document.getElementById('styleMenu').style.display = 'grid';
+                        menu.style.display = 'grid';
+                    };
+                    menu.appendChild(btn);
+                }
+            });
+            document.getElementById('navButtons').style.display = 'grid';
+            document.getElementById('nextMenu').style.display = 'grid';
+        }
+
+        function showExtendMenu(category) {
+            hideAll();
+            const menu = document.getElementById('extendMenu');
+            menu.style.display = 'grid';
+            menu.innerHTML = '';
+            gelProcess.extend.forEach(option => {
+                const btn = document.createElement('button');
+                let price = option.price;
+                btn.textContent = option.name + (price ? ` +$${price}` : '');
+                btn.onclick = () => {
+                    if (option.quantity) {
+                        showQuantitySubMenu(option, category, currentService);
+                    } else {
+                        let totalPrice = currentService.price + price;
+                        addToOrder(`${currentService.name} - ${option.name}`, totalPrice, 1, category);
+                        goHome();
                     }
                 };
                 menu.appendChild(btn);
             });
+            document.getElementById('navButtons').style.display = 'grid';
+            document.getElementById('nextMenu').style.display = 'none'; // 延長後無下一頁
+        }
+
+        function showSoakMenu(category) {
+            hideAll();
+            const menu = document.getElementById('soakMenu');
+            menu.style.display = 'grid';
+            menu.innerHTML = '';
+            gelProcess.soak.forEach(option => {
+                const btn = document.createElement('button');
+                let price = option.price;
+                btn.textContent = option.name + (price ? ` +$${price}` : '');
+                btn.onclick = () => {
+                    let totalPrice = currentService.price + price;
+                    addToOrder(`${currentService.name} - ${option.name}`, totalPrice, 1, category);
+                    showExtendMenu(category);
+                };
+                menu.appendChild(btn);
+            });
+            document.getElementById('navButtons').style.display = 'grid';
             document.getElementById('nextMenu').style.display = 'grid';
-            document.getElementById('navButtons').style.display = 'grid'; // 確保款式頁有導航按鈕
         }
 
         function showSubMenu(subOptions) {
@@ -355,7 +400,7 @@
                 };
                 subMenu.appendChild(btn);
             });
-            document.getElementById('navButtons').style.display = 'grid'; // 確保子頁面有導航按鈕
+            document.getElementById('navButtons').style.display = 'grid';
         }
 
         function showQuantitySubMenu(service, category, parentService = null) {
@@ -400,29 +445,45 @@
                     if (service.confirm) {
                         if (confirm('雙色漸變價格為 $80，是否確認？')) {
                             addToOrder(`${parentService ? parentService.name : currentService} - ${service.name}`, service.price * input.value, input.value, category);
-                            if (currentStep === 3) {
-                                document.getElementById('styleMenu').style.display = 'grid';
-                            }
+                            document.getElementById('styleMenu').style.display = 'grid';
                         }
                     } else {
                         addToOrder(`${parentService ? parentService.name : currentService} - ${service.name}`, service.price * input.value, input.value, category);
-                        if (currentStep === 3) {
-                            document.getElementById('styleMenu').style.display = 'grid';
-                        } else {
-                            goHome();
-                        }
+                        goHome();
                     }
                 };
                 subMenu.appendChild(btn);
             }
-            document.getElementById('navButtons').style.display = 'grid'; // 確保數量輸入頁有導航按鈕
+            document.getElementById('navButtons').style.display = 'grid';
         }
 
         function goNext() {
-            currentStep++;
-            const nextStep = Object.keys(gelProcess)[currentStep - 1];
-            if (nextStep) {
-                showGelStep(currentCategory, nextStep);
+            if (document.getElementById('removeMenu').style.display === 'grid') {
+                showStyleMenu(currentCategory);
+            } else if (document.getElementById('styleMenu').style.display === 'grid') {
+                if (currentCategory === 'gelHand') {
+                    showExtendMenu(currentCategory);
+                } else if (currentCategory === 'gelFoot') {
+                    showSoakMenu(currentCategory);
+                }
+            } else if (document.getElementById('soakMenu').style.display === 'grid') {
+                showExtendMenu(currentCategory);
+            }
+        }
+
+        function goBack() {
+            if (document.getElementById('removeMenu').style.display === 'grid') {
+                showCategory(currentCategory);
+            } else if (document.getElementById('styleMenu').style.display === 'grid') {
+                showRemoveMenu(currentCategory);
+            } else if (document.getElementById('extendMenu').style.display === 'grid') {
+                showStyleMenu(currentCategory);
+            } else if (document.getElementById('soakMenu').style.display === 'grid') {
+                showStyleMenu(currentCategory);
+            } else if (document.getElementById('subMenu').style.display === 'grid') {
+                showCategory(currentCategory);
+            } else if (document.getElementById('historyList').style.display === 'block') {
+                goHome();
             } else {
                 goHome();
             }
@@ -438,7 +499,15 @@
             document.getElementById('total').textContent = currentTotal;
             const details = document.getElementById('orderDetails');
             details.innerHTML = '訂單詳情：<br>' + (currentOrder.length ? 
-                currentOrder.map(o => `${o.item} x${o.quantity} $${o.price} ${o.note || ''}`).join('<br>') : '無');
+                currentOrder.map((o, index) => `${o.item} x${o.quantity} $${o.price} ${o.note || ''} <button class="delete" onclick="deleteOrderItem(${index})">刪除</button>`).join('<br>') : '無');
+        }
+
+        function deleteOrderItem(index) {
+            if (index >= 0 && index < currentOrder.length) {
+                currentTotal -= currentOrder[index].price;
+                currentOrder.splice(index, 1);
+                updateOrderDisplay();
+            }
         }
 
         function confirmOrder() {
@@ -459,7 +528,6 @@
         function clearOrder() {
             currentTotal = 0;
             currentOrder = [];
-            currentStep = 0;
             updateOrderDisplay();
             goHome();
         }
@@ -487,34 +555,10 @@
             }
         }
 
-        function goBack() {
-            if (currentStep > 0 && (currentCategory === 'gelHand' || currentCategory === 'gelFoot')) {
-                currentStep--;
-                if (currentStep === 0) {
-                    goHome();
-                } else {
-                    const prevStep = Object.keys(gelProcess)[currentStep - 1];
-                    showGelStep(currentCategory, prevStep);
-                }
-            } else if (document.getElementById('subMenu').style.display === 'grid' || document.getElementById('styleMenu').style.display === 'grid') {
-                hideAll();
-                if (currentStep === 3) {
-                    document.getElementById('styleMenu').style.display = 'grid';
-                } else {
-                    document.getElementById(`${currentCategory}Menu`).style.display = 'grid';
-                }
-            } else if (document.getElementById('historyList').style.display === 'block') {
-                goHome();
-            } else {
-                goHome();
-            }
-        }
-
         function goHome() {
             hideAll();
             document.getElementById('mainMenu').style.display = 'grid';
             document.getElementById('mainButtons').style.display = 'grid';
-            currentStep = 0;
         }
 
         function hideAll() {
@@ -522,8 +566,10 @@
             document.getElementById('gelHandMenu').style.display = 'none';
             document.getElementById('gelFootMenu').style.display = 'none';
             document.getElementById('otherMenu').style.display = 'none';
-            document.getElementById('subMenu').style.display = 'none';
+            document.getElementById('removeMenu').style.display = 'none';
             document.getElementById('styleMenu').style.display = 'none';
+            document.getElementById('extendMenu').style.display = 'none';
+            document.getElementById('soakMenu').style.display = 'none';
             document.getElementById('nextMenu').style.display = 'none';
             document.getElementById('historyList').style.display = 'none';
             document.getElementById('navButtons').style.display = 'none';
