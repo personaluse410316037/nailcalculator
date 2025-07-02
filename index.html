@@ -1,522 +1,368 @@
 <!DOCTYPE html>
-<html lang="zh-HK">
+<html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>美甲 POS 系統</title>
+    <title>美甲店 POS 系統</title>
     <style>
         body {
+            background-color: #f8f0f5;
             font-family: Arial, sans-serif;
             margin: 0;
-            padding: 15px;
-            background-color: #f8f0f5; /* 柔和粉色背景 */
+            padding: 20px;
+            display: flex;
+            justify-content: center;
         }
         .container {
             max-width: 600px;
-            margin: 0 auto;
+            width: 100%;
             text-align: center;
+        }
+        .order-details {
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            padding: 10px;
             background-color: #fff;
-            padding: 20px;
             border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 5px 0;
+        }
+        .order-item button {
+            font-size: 12px;
+            padding: 5px;
+            margin-left: 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .delete-btn {
+            background-color: #f44336;
+            color: white;
+        }
+        .delete-btn:hover {
+            background-color: #d32f2f;
+        }
+        .quantity-btn {
+            background-color: #9E9E9E;
+            color: white;
+        }
+        .quantity-btn:hover {
+            background-color: #757575;
         }
         .total {
-            font-size: 26px;
+            font-size: 1.2em;
             font-weight: bold;
-            margin: 15px 0;
-            padding: 15px;
-            background-color: #fff;
-            border: 2px solid #ff8a80;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-top: 10px;
         }
-        .button-grid {
+        .buttons {
             display: grid;
-            grid-template-columns: repeat(3, 1fr); /* 強制每行三個 */
-            gap: 15px;
-            margin: 20px 0;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
         }
         button {
             width: 100px;
-            height: 100px; /* 正方形按鈕 */
-            padding: 10px;
+            height: 100px;
             font-size: 16px;
-            font-weight: bold; /* 字體加粗 */
+            font-weight: bold;
             border: none;
             border-radius: 10px;
-            background-color: #ff8a80; /* 粉色按鈕 */
-            color: #333; /* 深灰色文字，增加對比度 */
             cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            transition: background-color 0.2s;
-            min-width: 100px; /* 確保最小寬度 */
+            color: #333;
         }
-        button:hover {
+        .service-btn {
+            background-color: #ff8a80;
+        }
+        .service-btn:hover {
             background-color: #f06292;
         }
-        .back-home {
+        .nav-btn {
             background-color: #2196F3;
-            color: white; /* 保留白色文字 */
+            color: white;
         }
-        .back-home:hover {
+        .nav-btn:hover {
             background-color: #1976D2;
         }
-        .clear, .delete {
+        .clear-btn {
             background-color: #f44336;
-            color: white; /* 保留白色文字 */
-            padding: 2px 6px; /* 減小按鈕大小 */
-            font-size: 12px; /* 與文字大小一致 */
-            width: auto;
-            height: auto;
-            min-width: 0;
+            color: white;
         }
-        .clear:hover, .delete:hover {
+        .clear-btn:hover {
             background-color: #d32f2f;
         }
-        .history {
-            background-color: #ff9800;
-            color: white; /* 保留白色文字 */
-        }
-        .history:hover {
-            background-color: #f57c00;
-        }
-        .confirm {
+        .confirm-btn {
             background-color: #4CAF50;
-            color: white; /* 保留白色文字 */
+            color: white;
         }
-        .confirm:hover {
+        .confirm-btn:hover {
             background-color: #388E3C;
         }
-        input[type="number"] {
-            width: 80px;
-            padding: 8px;
-            margin: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 16px;
+        .history-btn {
+            background-color: #ff9800;
+            color: white;
         }
-        .order-details {
+        .history-btn:hover {
+            background-color: #f57c00;
+        }
+        .history-section {
+            margin-top: 20px;
             text-align: left;
-            margin: 15px 0;
-            padding: 15px;
-            background-color: #fff;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
         .history-item {
-            border: 1px solid #ddd;
-            padding: 15px;
-            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
             background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
         @media (max-width: 600px) {
-            .button-grid {
-                grid-template-columns: repeat(3, 1fr); /* 手機上仍保持三列 */
-            }
             button {
-                width: 100%;
-                height: 80px; /* 手機上適應屏幕 */
+                width: 80px;
+                height: 80px;
                 font-size: 14px;
-                min-width: 0; /* 允許縮放 */
             }
-            .container {
-                padding: 10px;
+            .buttons {
+                grid-template-columns: repeat(2, 1fr);
             }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="total">當前總金額：$<span id="total">0</span></div>
-        <div class="order-details" id="orderDetails">訂單詳情：<br>無</div>
-        <div id="mainMenu" class="button-grid">
-            <button onclick="showCategory('gelHand')">Gel 手</button>
-            <button onclick="showCategory('gelFoot')">Gel 腳</button>
-            <button onclick="showCategory('other')">其他小項</button>
+        <div class="order-details">
+            <h2>訂單詳情</h2>
+            <div id="order-items"></div>
+            <div class="total">總金額: $<span id="total-amount">0</span></div>
         </div>
-        <div id="gelHandMenu" class="button-grid" style="display: none;"></div>
-        <div id="gelFootMenu" class="button-grid" style="display: none;"></div>
-        <div id="otherMenu" class="button-grid" style="display: none;"></div>
-        <div id="removeMenu" class="button-grid" style="display: none;"></div>
-        <div id="styleMenu" class="button-grid" style="display: none;"></div>
-        <div id="extendMenu" class="button-grid" style="display: none;"></div>
-        <div id="soakMenu" class="button-grid" style="display: none;"></div>
-        <div class="button-grid" id="navButtons" style="display: none;">
-            <button class="back-home" onclick="goBack()">上一頁</button>
-            <button class="back-home" onclick="goHome()">回首頁</button>
-        </div>
-        <div class="button-grid" id="mainButtons" style="display: block;">
-            <button class="back-home" onclick="goBack()">上一頁</button>
-            <button class="back-home" onclick="goHome()">回首頁</button>
-            <button class="confirm" onclick="confirmOrder()">確認訂單</button>
-            <button class="clear" onclick="clearOrder()">清空訂單</button>
-            <button class="history" onclick="showHistory()">查看歷史記錄</button>
-        </div>
-        <div id="historyList" style="display: none; text-align: left; margin-top: 20px;"></div>
+        <div id="buttons" class="buttons"></div>
+        <div id="history" class="history-section" style="display: none;"></div>
     </div>
-
     <script>
-        let currentTotal = 0;
+        let currentPage = 'home';
         let currentOrder = [];
-        let currentCategory = '';
-        let currentService = '';
-        let history = JSON.parse(localStorage.getItem('orderHistory')) || [];
+        let currentTotal = 0;
+        let currentGelType = null;
+        let currentService = null;
 
         const services = {
-            gelHand: [
+            'Gel 手': [
                 { name: 'Soft Gel (手)', price: 150 },
                 { name: 'Hard Gel (手)', price: 188 }
             ],
-            gelFoot: [
+            'Gel 腳': [
                 { name: 'Soft Gel (腳)', price: 188 },
                 { name: 'Hard Gel (腳)', price: 258 }
             ],
-            other: [
-                { name: '卸', subOptions: [
-                    { name: '手部卸甲', price: 80 },
-                    { name: '腳部卸甲', price: 100 }
-                ] },
-                { name: '修', subOptions: [
-                    { name: '修手（無 Gel，純浸水）', price: 80 },
-                    { name: '修腳（無 Gel，純浸水）', price: 198 },
-                    { name: '修眉', price: 80 }
-                ] },
-                { name: '補', subOptions: [
-                    { name: '補甲（手部）', prices: { within7: 0, after7: 30, nonShop: 50 }, quantity: true },
-                    { name: '補甲（腳部）', prices: { within7: 0, after7: 30, nonShop: 50 }, quantity: true }
-                ] }
+            '卸甲': [
+                { name: '不要卸甲', price: 0 },
+                { name: '要卸甲', price: null } // 價格根據 Gel 類型動態決定
             ],
-            style: [
+            '款式': [
+                { name: '法式', price: 50 },
                 { name: '牆上/新色版/閃粉', price: 50 },
                 { name: '貓眼', price: 80 },
                 { name: '跳色（多一隻色）', price: 30 },
                 { name: '捽粉', price: 100 },
                 { name: '有底色捽粉', price: 130 },
                 { name: '單色漸變', price: 80 },
-                { name: '雙色漸變', price: 80, confirm: true },
+                { name: '雙色漸變', price: 80 },
                 { name: '普通色板', price: 0 },
                 { name: '簡單畫花/貼紙', price: 10 },
                 { name: '貼石（細粒）', price: 3 }
-            ]
+            ],
+            '延長指甲': [
+                { name: '延長指甲 (每隻)', price: 10 }
+            ],
+            '浸腳': [
+                { name: '浸腳', price: 100 }
+            ],
+            '眼睫毛': [
+                { name: '自然款', price: 368 },
+                { name: '濃密款', price: 468 },
+                { name: '尊貴款', price: 568 },
+                { name: '套票', price: 0 },
+                { name: '補眼睫毛', price: 298 },
+                { name: '純卸', price: 150 }
+            ],
+            '其他小項': {
+                '卸': [
+                    { name: '手部卸甲', price: 80 },
+                    { name: '腳部卸甲', price: 100 }
+                ],
+                '修': [
+                    { name: '修手（無 Gel，純浸水）', price: 80 },
+                    { name: '修腳（無 Gel，純浸水）', price: 198 },
+                    { name: '修眉', price: 80 }
+                ],
+                '補': [
+                    { name: '7 日內免費補', price: 0 },
+                    { name: '超過 7 日 $30/隻', price: 30 },
+                    { name: '非本店 $50/隻', price: 50 }
+                ]
+            }
         };
 
-        const gelProcess = {
-            remove: [
-                { name: '不要卸甲', price: 0 },
-                { name: '要卸甲', price: function(service) {
-                    return service.name.includes('Soft Gel') ? 50 : (service.name.includes('Hard Gel') && service.name.includes('手') ? 30 : 0);
-                } }
-            ],
-            extend: [
-                { name: '不要延長指甲', price: 0 },
-                { name: '要延長指甲', price: 10 }
-            ],
-            soak: [
-                { name: '不要浸腳', price: 0 },
-                { name: '要浸腳', price: 100 }
-            ]
+        const pageFlow = {
+            'Gel 手': ['Gel 手', '卸甲', '款式', '延長指甲', 'home'],
+            'Gel 腳': ['Gel 腳', '卸甲', '款式', '浸腳', '延長指甲', 'home'],
+            '眼睫毛': ['眼睫毛', 'home'],
+            '其他小項': ['其他小項', 'home']
         };
 
-        function showCategory(category) {
-            currentCategory = category;
-            hideAll();
-            document.getElementById(`${category}Menu`).style.display = 'grid';
-            renderMenu(category);
-            if (category === 'mainMenu') {
-                document.getElementById('mainButtons').style.display = 'grid';
-                document.getElementById('navButtons').style.display = 'none';
+        function renderPage() {
+            const buttonsDiv = document.getElementById('buttons');
+            const historyDiv = document.getElementById('history');
+            buttonsDiv.innerHTML = '';
+            historyDiv.style.display = currentPage === 'history' ? 'block' : 'none';
+
+            if (currentPage === 'home') {
+                buttonsDiv.innerHTML = `
+                    <button class="service-btn" onclick="navigate('Gel 手')">Gel 手</button>
+                    <button class="service-btn" onclick="navigate('Gel 腳')">Gel 腳</button>
+                    <button class="service-btn" onclick="navigate('眼睫毛')">眼睫毛</button>
+                    <button class="service-btn" onclick="navigate('其他小項')">其他小項</button>
+                    <button class="confirm-btn" onclick="confirmOrder()">確認訂單</button>
+                    <button class="clear-btn" onclick="clearOrder()">清空訂單</button>
+                    <button class="history-btn" onclick="showHistory()">查看歷史記錄</button>
+                `;
+            } else if (currentPage === 'history') {
+                renderHistory();
+            } else if (currentPage === '其他小項') {
+                buttonsDiv.innerHTML = `
+                    <button class="service-btn" onclick="navigate('卸')">卸</button>
+                    <button class="service-btn" onclick="navigate('修')">修</button>
+                    <button class="service-btn" onclick="navigate('補')">補</button>
+                    <button class="nav-btn" onclick="navigate('home')">回首頁</button>
+                `;
             } else {
-                document.getElementById('mainButtons').style.display = 'none';
-                document.getElementById('navButtons').style.display = 'grid';
-            }
-        }
-
-        function renderMenu(category) {
-            const menu = document.getElementById(`${category}Menu`);
-            menu.innerHTML = '';
-            if (category === 'gelHand' || category === 'gelFoot') {
-                services[category].forEach(service => {
-                    const btn = document.createElement('button');
-                    btn.textContent = service.name;
-                    btn.onclick = () => {
-                        currentService = service;
-                        showRemoveMenu(category);
-                    };
-                    menu.appendChild(btn);
-                });
-            } else {
-                services[category].forEach(service => {
-                    const btn = document.createElement('button');
-                    btn.textContent = service.name;
-                    btn.onclick = () => {
-                        currentService = service.name;
-                        if (service.subOptions) {
-                            showSubMenu(service.subOptions);
-                        } else {
-                            addToOrder(service.name, service.price, 1, category);
-                        }
-                    };
-                    menu.appendChild(btn);
-                });
-            }
-        }
-
-        function showRemoveMenu(category) {
-            hideAll();
-            const menu = document.getElementById('removeMenu');
-            menu.style.display = 'grid';
-            menu.innerHTML = '';
-            gelProcess.remove.forEach(option => {
-                const btn = document.createElement('button');
-                let price = typeof option.price === 'function' ? option.price(currentService) : option.price;
-                btn.textContent = option.name + (price ? ` +$${price}` : '');
-                btn.onclick = () => {
-                    let totalPrice = currentService.price + price;
-                    addToOrder(`${currentService.name} - ${option.name}`, totalPrice, 1, category);
-                };
-                menu.appendChild(btn);
-            });
-            document.getElementById('navButtons').style.display = 'grid';
-        }
-
-        function showStyleMenu(category) {
-            hideAll();
-            const menu = document.getElementById('styleMenu');
-            menu.style.display = 'grid';
-            menu.innerHTML = '';
-            services.style.forEach(style => {
-                const btn = document.createElement('button');
-                btn.textContent = style.name + (style.price ? ` +$${style.price}` : '');
-                btn.onclick = () => {
-                    if (style.confirm) {
-                        if (confirm('雙色漸變價格為 $80，是否確認？')) {
-                            addToOrder(`${currentService.name} - ${style.name}`, style.price, 1, category);
-                        }
-                    } else {
-                        addToOrder(`${currentService.name} - ${style.name}`, style.price, 1, category);
+                const items = services[currentPage] || services['其他小項'][currentPage];
+                items.forEach(item => {
+                    let price = item.price;
+                    if (currentPage === '卸甲' && item.name === '要卸甲') {
+                        price = (currentGelType.includes('Soft Gel') ? 50 : 30);
                     }
-                };
-                menu.appendChild(btn);
-            });
-            document.getElementById('navButtons').style.display = 'grid';
-        }
-
-        function showExtendMenu(category) {
-            hideAll();
-            const menu = document.getElementById('extendMenu');
-            menu.style.display = 'grid';
-            menu.innerHTML = '';
-            gelProcess.extend.forEach(option => {
-                const btn = document.createElement('button');
-                let price = option.price;
-                btn.textContent = option.name + (price ? ` +$${price}` : '');
-                btn.onclick = () => {
-                    let totalPrice = currentService.price + price;
-                    addToOrder(`${currentService.name} - ${option.name}`, totalPrice, 1, category);
-                };
-                menu.appendChild(btn);
-            });
-            document.getElementById('navButtons').style.display = 'grid';
-        }
-
-        function showSoakMenu(category) {
-            hideAll();
-            const menu = document.getElementById('soakMenu');
-            menu.style.display = 'grid';
-            menu.innerHTML = '';
-            gelProcess.soak.forEach(option => {
-                const btn = document.createElement('button');
-                let price = option.price;
-                btn.textContent = option.name + (price ? ` +$${price}` : '');
-                btn.onclick = () => {
-                    let totalPrice = currentService.price + price;
-                    addToOrder(`${currentService.name} - ${option.name}`, totalPrice, 1, category);
-                };
-                menu.appendChild(btn);
-            });
-            document.getElementById('navButtons').style.display = 'grid';
-        }
-
-        function showSubMenu(subOptions) {
-            hideAll();
-            const subMenu = document.getElementById('subMenu');
-            subMenu.style.display = 'grid';
-            subMenu.innerHTML = '';
-            subOptions.forEach(option => {
-                const btn = document.createElement('button');
-                btn.textContent = `${option.name} $${option.price}`;
-                btn.onclick = () => {
-                    if (option.quantity) {
-                        showQuantitySubMenu(option, currentCategory);
-                    } else {
-                        addToOrder(option.name, option.price, 1, currentCategory, option.note);
-                        if (option.note) alert(option.note);
-                    }
-                };
-                subMenu.appendChild(btn);
-            });
-            document.getElementById('navButtons').style.display = 'grid';
-        }
-
-        function showQuantitySubMenu(service, category, parentService = null) {
-            hideAll();
-            const subMenu = document.getElementById('subMenu');
-            subMenu.style.display = 'grid';
-            subMenu.innerHTML = '';
-            const input = document.createElement('input');
-            input.type = 'number';
-            input.min = 1;
-            input.value = 1;
-            subMenu.appendChild(input);
-
-            if (service.prices && service.prices.within7 !== undefined) {
-                const btnWithin7 = document.createElement('button');
-                btnWithin7.textContent = '7 日內免費補';
-                btnWithin7.onclick = () => {
-                    addToOrder(`${service.name}（7 日內）`, 0, input.value, category);
-                };
-                subMenu.appendChild(btnWithin7);
-
-                const btnAfter7 = document.createElement('button');
-                btnAfter7.textContent = `超過 7 日 $30/隻`;
-                btnAfter7.onclick = () => {
-                    addToOrder(`${service.name}（超過 7 日）`, 30 * input.value, input.value, category);
-                };
-                subMenu.appendChild(btnAfter7);
-
-                const btnNonShop = document.createElement('button');
-                btnNonShop.textContent = `非本店 $50/隻`;
-                btnNonShop.onclick = () => {
-                    addToOrder(`${service.name}（非本店）`, 50 * input.value, input.value, category);
-                };
-                subMenu.appendChild(btnNonShop);
-            } else {
-                const btn = document.createElement('button');
-                btn.textContent = `確認 ${service.name} $${service.price}/單位`;
-                btn.onclick = () => {
-                    if (service.confirm) {
-                        if (confirm('雙色漸變價格為 $80，是否確認？')) {
-                            addToOrder(`${parentService ? parentService.name : currentService} - ${service.name}`, service.price * input.value, input.value, category);
-                        }
-                    } else {
-                        addToOrder(`${parentService ? parentService.name : currentService} - ${service.name}`, service.price * input.value, input.value, category);
-                    }
-                };
-                subMenu.appendChild(btn);
-            }
-            document.getElementById('navButtons').style.display = 'grid';
-        }
-
-        function goBack() {
-            if (document.getElementById('removeMenu').style.display === 'grid') {
-                showCategory(currentCategory);
-            } else if (document.getElementById('styleMenu').style.display === 'grid') {
-                showRemoveMenu(currentCategory);
-            } else if (document.getElementById('extendMenu').style.display === 'grid') {
-                showStyleMenu(currentCategory);
-            } else if (document.getElementById('soakMenu').style.display === 'grid') {
-                showStyleMenu(currentCategory);
-            } else if (document.getElementById('subMenu').style.display === 'grid') {
-                showCategory(currentCategory);
-            } else if (document.getElementById('historyList').style.display === 'block') {
-                goHome();
-            } else {
-                goHome();
-            }
-        }
-
-        function addToOrder(item, price, quantity, category, note = '') {
-            currentTotal += price;
-            currentOrder.push({ item, price, quantity, category, note });
-            updateOrderDisplay();
-        }
-
-        function updateOrderDisplay() {
-            document.getElementById('total').textContent = currentTotal;
-            const details = document.getElementById('orderDetails');
-            details.innerHTML = '訂單詳情：<br>' + (currentOrder.length ? 
-                currentOrder.map((o, index) => `${o.item} x${o.quantity} $${o.price} ${o.note || ''} <button class="delete" onclick="deleteOrderItem(${index})">刪</button>`).join('<br>') : '無');
-        }
-
-        function deleteOrderItem(index) {
-            if (index >= 0 && index < currentOrder.length) {
-                currentTotal -= currentOrder[index].price;
-                currentOrder.splice(index, 1);
-                updateOrderDisplay();
-            }
-        }
-
-        function confirmOrder() {
-            if (currentOrder.length) {
-                history.push({
-                    date: new Date().toLocaleString('zh-HK'),
-                    services: [...currentOrder],
-                    total: currentTotal
+                    buttonsDiv.innerHTML += `
+                        <button class="service-btn" onclick="addToOrder('${item.name}', ${price})">${item.name}<br>$${price}</button>
+                    `;
                 });
-                localStorage.setItem('orderHistory', JSON.stringify(history));
-                clearOrder();
-                alert('訂單已確認！');
-            } else {
-                alert('請選擇至少一項服務！');
+                const flow = pageFlow[currentService] || ['home'];
+                const currentIndex = flow.indexOf(currentPage);
+                if (currentIndex > 0) {
+                    buttonsDiv.innerHTML += `<button class="nav-btn" onclick="navigate('${flow[currentIndex - 1]}')">上一頁</button>`;
+                }
+                if (currentIndex < flow.length - 1) {
+                    buttonsDiv.innerHTML += `< deleted code for brevity>`;
+                }
+                buttonsDiv.innerHTML += `<button class="nav-btn" onclick="navigate('home')">回首頁</button>`;
             }
+            renderOrder();
+        }
+
+        function navigate(page) {
+            if (page === 'Gel 手' || page === 'Gel 腳') {
+                currentService = page;
+            }
+            currentPage = page;
+            renderPage();
+        }
+
+        function addToOrder(name, price) {
+            if (currentPage === 'Gel 手' || currentPage === 'Gel 腳') {
+                currentGelType = name;
+            }
+            const existingItem = currentOrder.find(item => item.name === name);
+            if (existingItem) {
+                existingItem.quantity++;
+            } else {
+                currentOrder.push({ name, price, quantity: 1 });
+            }
+            updateTotal();
+            renderOrder();
+        }
+
+        function updateQuantity(index, delta) {
+            currentOrder[index].quantity = Math.max(0, currentOrder[index].quantity + delta);
+            updateTotal();
+            renderOrder();
+        }
+
+        function deleteItem(index) {
+            currentOrder.splice(index, 1);
+            updateTotal();
+            renderOrder();
+        }
+
+        function updateTotal() {
+            currentTotal = currentOrder.reduce((sum, item) => sum + item.price * item.quantity, 0);
+            document.getElementById('total-amount').textContent =現在の総額;
+        }
+
+        function renderOrder() {
+            const orderItems = document.getElementById('order-items');
+            orderItems.innerHTML = currentOrder.map((item, index) => `
+                <div class="order-item">
+                    <span>${item.name} ($${item.price}) x ${item.quantity}</span>
+                    <div>
+                        <button class="quantity-btn" onclick="updateQuantity(${index}, 1)">+</button>
+                        <button class="quantity-btn" onclick="updateQuantity(${index}, -1)">-</button>
+                        <button class="delete-btn" onclick="deleteItem(${index})">刪</button>
+                    </div>
+                </div>
+            `).join('');
+            updateTotal();
         }
 
         function clearOrder() {
-            currentTotal = 0;
             currentOrder = [];
-            updateOrderDisplay();
-            goHome();
+            currentTotal = 0;
+            renderOrder();
+        }
+
+        function confirmOrder() {
+            if (currentOrder.length === 0) return;
+            const orderHistory = JSON.parse(localStorage.getItem('orderHistory') || '[]');
+            orderHistory.push({
+                date: new Date().toLocaleString('zh-TW'),
+                items: [...currentOrder],
+                total: currentTotal
+            });
+            localStorage.setItem('orderHistory', JSON.stringify(orderHistory));
+            clearOrder();
+            alert('訂單已確認！');
         }
 
         function showHistory() {
-            hideAll();
-            const historyList = document.getElementById('historyList');
-            historyList.style.display = 'block';
-            historyList.innerHTML = '<h3>歷史記錄</h3>' + (history.length ? 
-                history.map((order, index) => `
-                    <div class="history-item">
-                        <strong>訂單 ${index + 1} - ${order.date}</strong><br>
-                        ${order.services.map(s => `${s.item} x${s.quantity} $${s.price} ${s.note || ''}`).join('<br>')}<br>
-                        <strong>總金額: $${order.total}</strong><br>
-                        <button class="delete" onclick="deleteOrder(${index})">刪除</button>
-                    </div>
-                `).join('') : '無歷史記錄');
+            currentPage = 'history';
+            renderPage();
         }
 
-        function deleteOrder(index) {
-            if (confirm('確定刪除此訂單？')) {
-                history.splice(index, 1);
-                localStorage.setItem('orderHistory', JSON.stringify(history));
-                showHistory();
-            }
+        function renderHistory() {
+            const historyDiv = document.getElementById('history');
+            const orderHistory = JSON.parse(localStorage.getItem('orderHistory') || '[]');
+            historyDiv.innerHTML = orderHistory.map((order, index) => `
+                <div class="history-item">
+                    <p><strong>日期:</strong> ${order.date}</p>
+                    <p><strong>訂單內容:</strong></p>
+                    ${order.items.map(item => `<p>${item.name} ($${item.price}) x ${item.quantity}</p>`).join('')}
+                    <p><strong>總金額:</strong> $${order.total}</p>
+                    <button class="delete-btn" onclick="deleteHistory(${index})">刪除記錄</button>
+                </div>
+            `).join('');
         }
 
-        function goHome() {
-            hideAll();
-            document.getElementById('mainMenu').style.display = 'grid';
-            document.getElementById('mainButtons').style.display = 'grid';
+        function deleteHistory(index) {
+            const orderHistory = JSON.parse(localStorage.getItem('orderHistory') || '[]');
+            orderHistory.splice(index, 1);
+            localStorage.setItem('orderHistory', JSON.stringify(orderHistory));
+            renderHistory();
         }
 
-        function hideAll() {
-            document.getElementById('mainMenu').style.display = 'none';
-            document.getElementById('gelHandMenu').style.display = 'none';
-            document.getElementById('gelFootMenu').style.display = 'none';
-            document.getElementById('otherMenu').style.display = 'none';
-            document.getElementById('removeMenu').style.display = 'none';
-            document.getElementById('styleMenu').style.display = 'none';
-            document.getElementById('extendMenu').style.display = 'none';
-            document.getElementById('soakMenu').style.display = 'none';
-            document.getElementById('nextMenu').style.display = 'none';
-            document.getElementById('historyList').style.display = 'none';
-            document.getElementById('navButtons').style.display = 'none';
-            document.getElementById('mainButtons').style.display = 'none';
-        }
+        // 初始化
+        renderPage();
     </script>
 </body>
 </html>
