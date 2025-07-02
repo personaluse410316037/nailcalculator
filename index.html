@@ -215,8 +215,8 @@
                 { name: '要延長指甲', price: 10, quantity: true }
             ],
             soak: [
-                { name: '不要浸腳', price: 0 },
-                { name: '要浸腳', price: 100 }
+                { name: '不要浸腳', price: 0, nextStep: 'extend' },
+                { name: '要浸腳', price: 100, nextStep: 'extend' }
             ]
         };
 
@@ -273,22 +273,6 @@
             if (step === 'style') {
                 document.getElementById('styleMenu').style.display = 'grid';
                 renderStyleMenu(category);
-            } else if (step === 'extend') {
-                gelProcess[step].forEach(option => {
-                    const btn = document.createElement('button');
-                    let price = option.price;
-                    btn.textContent = option.name + (price ? ` +$${price}` : '');
-                    btn.onclick = () => {
-                        if (option.quantity) {
-                            showQuantitySubMenu(option, category, currentService);
-                        } else {
-                            let totalPrice = currentService.price + price;
-                            addToOrder(`${currentService.name} - ${option.name}`, totalPrice, 1, category);
-                            goHome();
-                        }
-                    };
-                    subMenu.appendChild(btn);
-                });
             } else {
                 gelProcess[step].forEach(option => {
                     const btn = document.createElement('button');
@@ -302,10 +286,16 @@
                             addToOrder(`${currentService.name} - ${option.name}`, totalPrice, 1, category);
                             currentStep++;
                             const nextStep = option.nextStep;
-                            if (nextStep && (category === 'gelFoot' && nextStep === 'soak')) {
-                                showGelStep(category, nextStep);
-                            } else if (nextStep && category === 'gelHand') {
-                                showGelStep(category, nextStep);
+                            if (nextStep) {
+                                if (category === 'gelHand' && nextStep === 'extend') {
+                                    showGelStep(category, nextStep);
+                                } else if (category === 'gelFoot' && nextStep === 'extend') {
+                                    showGelStep(category, nextStep);
+                                } else if (category === 'gelFoot' && nextStep === 'soak') {
+                                    showGelStep(category, nextStep);
+                                } else {
+                                    goHome();
+                                }
                             } else {
                                 goHome();
                             }
