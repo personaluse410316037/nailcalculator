@@ -19,19 +19,17 @@
       font-size: 2.5em; /* 標題文字放大 */
       color: #333;
     }
-    label, select, input, button {
+    label, input, button {
       font-size: 1.5em; /* 選項和按鈕文字放大 */
       margin: 10px 0;
     }
-    select, button {
-      padding: 10px;
-      border-radius: 5px;
-      cursor: pointer;
-    }
     button {
+      padding: 10px 20px;
+      border-radius: 5px;
       background-color: #ff6f61;
       color: white;
       border: none;
+      cursor: pointer;
       transition: background-color 0.3s;
     }
     button:hover {
@@ -50,19 +48,39 @@
       width: 90%;
       max-width: 500px;
     }
+    hr {
+      border: 1px solid #ccc;
+      margin: 20px 0;
+    }
+    .section-title {
+      font-size: 1.6em;
+      color: #555;
+      margin: 10px 0;
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>美甲收費計算機</h1>
-    <label>選擇服務：</label>
-    <select id="service">
-      <option value="basic">基礎美甲 ($100)</option>
-      <option value="gel">凝膠甲 ($150)</option>
-      <option value="french">法式美甲 ($120)</option>
-    </select><br>
+    
+    <div class="section-title">選擇主要服務</div>
+    <label><input type="checkbox" id="nail"> 美甲 ($100)</label><br>
+    <label><input type="checkbox" id="manicure"> 修甲 ($80)</label><br>
+    <label><input type="checkbox" id="eyelash"> 美眼睫毛 ($120)</label><br>
+    
+    <hr> <!-- 分隔線 -->
+    
+    <div class="section-title">附加服務</div>
     <label><input type="checkbox" id="complex"> 複雜彩繪 (+$20)</label><br>
     <label><input type="checkbox" id="gelAdd"> 凝膠加成 (+50%)</label><br>
+    <label><input type="checkbox" id="premiumColor"> 尊貴顏色 (+$20)</label><br>
+    
+    <hr> <!-- 分隔線 -->
+    
+    <div class="section-title">折扣</div>
+    <label><input type="checkbox" id="firstTime"> 首次優惠 (-$10)</label><br>
+    <label><input type="checkbox" id="bundle"> 疊加優惠 (僅收最貴的附加服務費用)</label><br>
+    
     <button onclick="calculate()">計算費用</button>
     <p id="result">總計: $0</p>
     <p id="explanation">收費明細：請選擇服務</p>
@@ -72,34 +90,68 @@
     function calculate() {
       let total = 0;
       let explanation = "收費明細：";
-      let service = document.getElementById("service").value;
-      let complex = document.getElementById("complex").checked;
-      let gelAdd = document.getElementById("gelAdd").checked;
+      let addOnFees = [];
+      let servicesSelected = false;
 
-      // 基礎價格
-      if (service === "basic") {
-        total = 100;
-        explanation += "基礎美甲 $100";
-      } else if (service === "gel") {
-        total = 150;
-        explanation += "凝膠甲 $150";
-      } else if (service === "french") {
-        total = 120;
-        explanation += "法式美甲 $120";
+      // 主要服務
+      if (document.getElementById("nail").checked) {
+        total += 100;
+        explanation += "美甲 $100";
+        servicesSelected = true;
+      }
+      if (document.getElementById("manicure").checked) {
+        total += 80;
+        explanation += (servicesSelected ? ", " : "") + "修甲 $80";
+        servicesSelected = true;
+      }
+      if (document.getElementById("eyelash").checked) {
+        total += 120;
+        explanation += (servicesSelected ? ", " : "") + "美眼睫毛 $120";
+        servicesSelected = true;
       }
 
-      // 條件規則：凝膠加成
-      if (gelAdd) {
-        let gelFee = total * 0.5;
-        total += gelFee;
-        explanation += ", 凝膠加成 $" + gelFee;
+      // 如果沒有選擇主要服務
+      if (!servicesSelected) {
+        document.getElementById("result").innerText = "總計: $0";
+        document.getElementById("explanation").innerText = "收費明細：請選擇至少一項主要服務";
+        return;
       }
 
-      // 條件規則：複雜彩繪
-      if (complex) {
-        total += 20;
-        explanation += ", 複雜彩繪 $20";
+      // 附加服務
+      let baseTotal = total; // 儲存基礎總額以計算凝膠加成
+      if (document.getElementById("complex").checked) {
+        addOnFees.push({ name: "複雜彩繪", fee: 20 });
       }
+      if (document.getElementById("premiumColor").checked) {
+        addOnFees.push({ name: "尊貴顏色", fee: 20 });
+      }
+      if (document.getElementById("gelAdd").checked) {
+        let gelFee = baseTotal * 0.5;
+        addOnFees.push({ name: "凝膠加成", fee: gelFee });
+      }
+
+      // 疊加優惠：僅收最貴的附加服務
+      if (document.getElementById("bundle").checked && addOnFees.length > 1) {
+        let maxFee = Math.max(...addOnFees.map(item => item.fee));
+        let maxFeeItem = addOnFees.find(item => item.fee === maxFee);
+        total += maxFee;
+        explanation += ", " + maxFeeItem.name + " $" + maxFee + " (疊加優惠：僅收最貴附加服務)";
+      } else {
+        // 無疊加優惠，全部附加服務費用相加
+        addOnFees.forEach(item => {
+          total += item.fee;
+          explanation += ", " + item.name + " $" + item.fee;
+        });
+      }
+
+      // 首次優惠
+      if (document.getElementById("firstTime").checked) {
+        total -= 10;
+        explanation += ", 首次優惠 -$10";
+      }
+
+      // 確保總價不為負
+      total = Math.max(0, total);
 
       // 更新顯示
       document.getElementById("result").innerText = "總計: $" + total;
