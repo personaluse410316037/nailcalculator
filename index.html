@@ -32,12 +32,14 @@
             margin: 5px 0;
         }
         .order-item button {
-            font-size: 12px;
-            padding: 5px;
+            font-size: 12px; /* 與文字大小一致 */
+            padding: 2px 6px; /* 減少內邊距，控制按鈕大小 */
             margin-left: 5px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            height: auto; /* 自動調整高度 */
+            width: auto; /* 自動調整寬度 */
         }
         .delete-btn {
             background-color: #f44336;
@@ -159,7 +161,7 @@
             ],
             '卸甲': [
                 { name: '不要卸甲', price: 0 },
-                { name: '要卸甲', price: null } // 價格根據 Gel 類型動態決定
+                { name: '要卸甲', price: null }
             ],
             '款式': [
                 { name: '法式', price: 50 },
@@ -259,7 +261,7 @@
                 }
                 buttonsDiv.innerHTML += `<button class="nav-btn" onclick="navigate('home')">回首頁</button>`;
             }
-            renderOrder(); // 每次渲染頁面時確保訂單詳情更新
+            renderOrder();
         }
 
         function navigate(page) {
@@ -287,7 +289,7 @@
         function updateQuantity(index, delta) {
             currentOrder[index].quantity = Math.max(0, currentOrder[index].quantity + delta);
             if (currentOrder[index].quantity === 0) {
-                currentOrder.splice(index, 1); // 數量為 0 時移除項目
+                currentOrder.splice(index, 1);
             }
             updateTotal();
             renderOrder();
