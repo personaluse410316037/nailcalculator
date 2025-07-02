@@ -133,23 +133,17 @@
         <div id="mainMenu" class="button-grid">
             <button onclick="showCategory('gelHand')">Gel 手</button>
             <button onclick="showCategory('gelFoot')">Gel 腳</button>
-            <button onclick="showCategory('fixHand')">修手</button>
-            <button onclick="showCategory('fixFoot')">修腳</button>
-            <button onclick="showCategory('eyelash')">眼睫毛</button>
             <button onclick="showCategory('other')">其他小項</button>
         </div>
         <div id="gelHandMenu" class="button-grid" style="display: none;"></div>
         <div id="gelFootMenu" class="button-grid" style="display: none;"></div>
-        <div id="fixHandMenu" class="button-grid" style="display: none;"></div>
-        <div id="fixFootMenu" class="button-grid" style="display: none;"></div>
-        <div id="eyelashMenu" class="button-grid" style="display: none;"></div>
         <div id="otherMenu" class="button-grid" style="display: none;"></div>
         <div id="subMenu" class="button-grid" style="display: none;"></div>
         <div id="styleMenu" class="button-grid" style="display: none;"></div>
         <div id="nextMenu" class="button-grid" style="display: none;">
             <button class="confirm" onclick="goNext()">下一步</button>
         </div>
-        <div class="button-grid">
+        <div class="button-grid" id="mainButtons" style="display: block;">
             <button class="back-home" onclick="goBack()">上一步</button>
             <button class="back-home" onclick="goHome()">回首頁</button>
             <button class="confirm" onclick="confirmOrder()">確認訂單</button>
@@ -169,29 +163,12 @@
 
         const services = {
             gelHand: [
-                { name: 'Hard Gel', nextStep: 'remove' },
-                { name: 'Soft Gel', nextStep: 'remove' }
+                { name: 'Soft Gel (手) $150', nextStep: 'remove', basePrice: 150 },
+                { name: 'Hard Gel (手) $188', nextStep: 'remove', basePrice: 188 }
             ],
             gelFoot: [
-                { name: 'Hard Gel', nextStep: 'remove' },
-                { name: 'Soft Gel', nextStep: 'remove' }
-            ],
-            fixHand: [
-                { name: '修手（無 Gel，純浸水）', price: 80 }
-            ],
-            fixFoot: [
-                { name: '修腳（無 Gel，純浸水）', price: 198 }
-            ],
-            eyelash: [
-                { name: '自然款', price: 368 },
-                { name: '濃密款', price: 468 },
-                { name: '尊貴款', price: 568 },
-                { name: '免費服務', subOptions: [
-                    { name: '套票補簽', price: 0, note: '請在簿仔簽名' },
-                    { name: '付費補', price: 0 },
-                    { name: '純卸', price: 0 },
-                    { name: '10 日內免費補', price: 0 }
-                ] }
+                { name: 'Soft Gel (腳) $188', nextStep: 'remove', basePrice: 188 },
+                { name: 'Hard Gel (腳) $258', nextStep: 'remove', basePrice: 258 }
             ],
             other: [
                 { name: '卸', subOptions: [
@@ -199,6 +176,8 @@
                     { name: '腳部卸甲', price: 100 }
                 ] },
                 { name: '修', subOptions: [
+                    { name: '修手（無 Gel，純浸水）', price: 80 },
+                    { name: '修腳（無 Gel，純浸水）', price: 198 },
                     { name: '修眉', price: 80 }
                 ] },
                 { name: '補', subOptions: [
@@ -223,7 +202,9 @@
         const gelProcess = {
             remove: [
                 { name: '不要卸甲', price: 0, nextStep: 'style' },
-                { name: '要卸甲', price: 50, nextStep: 'style' } // 假設卸甲加 $50，可根據實際調整
+                { name: '要卸甲', price: function(service) {
+                    return service.name.includes('Soft Gel') ? 50 : (service.name.includes('Hard Gel') && service.name.includes('手') ? 30 : 0);
+                }, nextStep: 'style' }
             ],
             extend: [
                 { name: '不要延長指甲', price: 0, nextStep: 'soak' },
@@ -240,6 +221,11 @@
             hideAll();
             document.getElementById(`${category}Menu`).style.display = 'grid';
             renderMenu(category);
+            if (category !== 'mainMenu') {
+                document.getElementById('mainButtons').style.display = 'none';
+            } else {
+                document.getElementById('mainButtons').style.display = 'grid';
+            }
         }
 
         function renderMenu(category) {
@@ -250,7 +236,7 @@
                     const btn = document.createElement('button');
                     btn.textContent = service.name;
                     btn.onclick = () => {
-                        currentService = service.name;
+                        currentService = service;
                         currentStep = 1; // 開始流程
                         showGelStep(category, service.nextStep);
                     };
@@ -284,15 +270,16 @@
             } else {
                 gelProcess[step].forEach(option => {
                     const btn = document.createElement('button');
-                    btn.textContent = option.name + (option.price ? ` $${option.price}` : '');
+                    let price = typeof option.price === 'function' ? option.price(currentService) : option.price;
+                    btn.textContent = option.name + (price ? ` +$${price}` : '');
                     btn.onclick = () => {
                         if (option.quantity) {
-                            showQuantitySubMenu(option, category);
+                            showQuantitySubMenu(option, category, currentService);
                         } else {
-                            addToOrder(`${currentService} - ${option.name}`, option.price, 1, category);
+                            addToOrder(`${currentService.name} - ${option.name}`, price, 1, category);
                             currentStep++;
                             const nextStep = option.nextStep;
-                            if (nextStep) {
+                            if (nextStep && (category === 'gelFoot' || (category === 'gelHand' && nextStep !== 'soak'))) {
                                 showGelStep(category, nextStep);
                             } else {
                                 goHome();
@@ -312,13 +299,15 @@
                 btn.textContent = style.name + (style.price ? ` +$${style.price}` : '');
                 btn.onclick = () => {
                     if (style.quantity) {
-                        showQuantitySubMenu(style, category);
+                        showQuantitySubMenu(style, category, currentService);
                     } else if (style.confirm) {
                         if (confirm('雙色漸變價格為 $80，是否確認？')) {
-                            addToOrder(`${currentService} - ${style.name}`, style.price, 1, category);
+                            addToOrder(`${currentService.name} - ${style.name}`, style.price, 1, category);
+                            document.getElementById('styleMenu').style.display = 'grid';
                         }
                     } else {
-                        addToOrder(`${currentService} - ${style.name}`, style.price, 1, category);
+                        addToOrder(`${currentService.name} - ${style.name}`, style.price, 1, category);
+                        document.getElementById('styleMenu').style.display = 'grid';
                     }
                 };
                 menu.appendChild(btn);
@@ -346,7 +335,7 @@
             });
         }
 
-        function showQuantitySubMenu(service, category) {
+        function showQuantitySubMenu(service, category, parentService = null) {
             hideAll();
             const subMenu = document.getElementById('subMenu');
             subMenu.style.display = 'grid';
@@ -378,18 +367,16 @@
                 btn.onclick = () => {
                     if (service.confirm) {
                         if (confirm('雙色漸變價格為 $80，是否確認？')) {
-                            addToOrder(`${currentService} - ${service.name}`, service.price * input.value, input.value, category);
+                            addToOrder(`${parentService ? parentService.name : currentService} - ${service.name}`, service.price * input.value, input.value, category);
                             if (currentStep === 3) {
                                 document.getElementById('styleMenu').style.display = 'grid';
-                                renderStyleMenu(category);
                             }
                         }
                     } else {
-                        addToOrder(`${currentService} - ${service.name}`, service.price * input.value, input.value, category);
+                        addToOrder(`${parentService ? parentService.name : currentService} - ${service.name}`, service.price * input.value, input.value, category);
                         if (currentStep === 3) {
                             document.getElementById('styleMenu').style.display = 'grid';
-                            renderStyleMenu(category);
-                        } else {
+                        } else if (currentStep > 0) {
                             currentStep++;
                             const nextStep = gelProcess[Object.keys(gelProcess)[currentStep - 1]].find(o => o.name === service.name)?.nextStep;
                             if (nextStep) {
@@ -484,7 +471,11 @@
                 }
             } else if (document.getElementById('subMenu').style.display === 'grid' || document.getElementById('styleMenu').style.display === 'grid') {
                 hideAll();
-                document.getElementById(`${currentCategory}Menu`).style.display = 'grid';
+                if (currentStep === 3) {
+                    document.getElementById('styleMenu').style.display = 'grid';
+                } else {
+                    document.getElementById(`${currentCategory}Menu`).style.display = 'grid';
+                }
             } else if (document.getElementById('historyList').style.display === 'block') {
                 goHome();
             } else {
@@ -495,6 +486,7 @@
         function goHome() {
             hideAll();
             document.getElementById('mainMenu').style.display = 'grid';
+            document.getElementById('mainButtons').style.display = 'grid';
             currentStep = 0;
         }
 
@@ -502,14 +494,12 @@
             document.getElementById('mainMenu').style.display = 'none';
             document.getElementById('gelHandMenu').style.display = 'none';
             document.getElementById('gelFootMenu').style.display = 'none';
-            document.getElementById('fixHandMenu').style.display = 'none';
-            document.getElementById('fixFootMenu').style.display = 'none';
-            document.getElementById('eyelashMenu').style.display = 'none';
             document.getElementById('otherMenu').style.display = 'none';
             document.getElementById('subMenu').style.display = 'none';
             document.getElementById('styleMenu').style.display = 'none';
             document.getElementById('nextMenu').style.display = 'none';
             document.getElementById('historyList').style.display = 'none';
+            document.getElementById('mainButtons').style.display = 'none';
         }
     </script>
 </body>
