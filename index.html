@@ -131,16 +131,24 @@
         <div class="total">當前總金額：$<span id="total">0</span></div>
         <div class="order-details" id="orderDetails">訂單詳情：<br>無</div>
         <div id="mainMenu" class="button-grid">
-            <button onclick="showCategory('hand')">手</button>
-            <button onclick="showCategory('foot')">腳</button>
+            <button onclick="showCategory('gelHand')">Gel 手</button>
+            <button onclick="showCategory('gelFoot')">Gel 腳</button>
+            <button onclick="showCategory('fixHand')">修手</button>
+            <button onclick="showCategory('fixFoot')">修腳</button>
             <button onclick="showCategory('eyelash')">眼睫毛</button>
-            <button onclick="showCategory('style')">款式</button>
+            <button onclick="showCategory('other')">其他小項</button>
         </div>
-        <div id="handMenu" class="button-grid" style="display: none;"></div>
-        <div id="footMenu" class="button-grid" style="display: none;"></div>
+        <div id="gelHandMenu" class="button-grid" style="display: none;"></div>
+        <div id="gelFootMenu" class="button-grid" style="display: none;"></div>
+        <div id="fixHandMenu" class="button-grid" style="display: none;"></div>
+        <div id="fixFootMenu" class="button-grid" style="display: none;"></div>
         <div id="eyelashMenu" class="button-grid" style="display: none;"></div>
-        <div id="styleMenu" class="button-grid" style="display: none;"></div>
+        <div id="otherMenu" class="button-grid" style="display: none;"></div>
         <div id="subMenu" class="button-grid" style="display: none;"></div>
+        <div id="styleMenu" class="button-grid" style="display: none;"></div>
+        <div id="nextMenu" class="button-grid" style="display: none;">
+            <button class="confirm" onclick="goNext()">下一步</button>
+        </div>
         <div class="button-grid">
             <button class="back-home" onclick="goBack()">上一步</button>
             <button class="back-home" onclick="goHome()">回首頁</button>
@@ -156,27 +164,23 @@
         let currentOrder = [];
         let currentCategory = '';
         let currentService = '';
+        let currentStep = 0; // 跟踪 Gel 手/腳的流程步驟
         let history = JSON.parse(localStorage.getItem('orderHistory')) || [];
 
         const services = {
-            hand: [
-                { name: 'Soft Gel', prices: { noRemove: 150, remove: 200 }, hasRemove: true },
-                { name: 'Hard Gel', prices: { noRemove: 188, remove: 218 }, hasRemove: true, extendable: true },
-                { name: '修手（無 Gel，純浸水）', price: 80 },
-                { name: '純卸甲', price: 80 },
-                { name: '卸甲後護理', price: 160 },
-                { name: '補甲', prices: { within7: 0, after7: 30, nonShop: 50 }, quantity: true },
-                { name: '延長指甲（Hard Gel）', price: 10, quantity: true }
+            gelHand: [
+                { name: 'Hard Gel', nextStep: 'remove' },
+                { name: 'Soft Gel', nextStep: 'remove' }
             ],
-            foot: [
-                { name: 'Soft Gel', prices: { noRemove: 188, remove: 238 }, hasRemove: true },
-                { name: 'Hard Gel', prices: { noRemove: 258, remove: 258 }, hasRemove: true, extendable: true },
-                { name: '修腳（無 Gel，純浸水）', price: 198 },
-                { name: '修腳（不浸水）/卸甲後護理', price: 120 },
-                { name: '純卸甲', price: 100 },
-                { name: '補甲', prices: { within7: 0, after7: 30, nonShop: 50 }, quantity: true },
-                { name: '浸腳修腳', price: 100 },
-                { name: '延長指甲（Hard Gel）', price: 10, quantity: true }
+            gelFoot: [
+                { name: 'Hard Gel', nextStep: 'remove' },
+                { name: 'Soft Gel', nextStep: 'remove' }
+            ],
+            fixHand: [
+                { name: '修手（無 Gel，純浸水）', price: 80 }
+            ],
+            fixFoot: [
+                { name: '修腳（無 Gel，純浸水）', price: 198 }
             ],
             eyelash: [
                 { name: '自然款', price: 368 },
@@ -189,6 +193,19 @@
                     { name: '10 日內免費補', price: 0 }
                 ] }
             ],
+            other: [
+                { name: '卸', subOptions: [
+                    { name: '手部卸甲', price: 80 },
+                    { name: '腳部卸甲', price: 100 }
+                ] },
+                { name: '修', subOptions: [
+                    { name: '修眉', price: 80 }
+                ] },
+                { name: '補', subOptions: [
+                    { name: '補甲（手部）', prices: { within7: 0, after7: 30, nonShop: 50 }, quantity: true },
+                    { name: '補甲（腳部）', prices: { within7: 0, after7: 30, nonShop: 50 }, quantity: true }
+                ] }
+            ],
             style: [
                 { name: '牆上/新色版/閃粉', price: 50 },
                 { name: '貓眼', price: 80 },
@@ -197,8 +214,24 @@
                 { name: '有底色捽粉', price: 130 },
                 { name: '單色漸變', price: 80 },
                 { name: '雙色漸變', price: 80, confirm: true },
+                { name: '普通色板', price: 0 },
                 { name: '簡單畫花/貼紙', price: 10, quantity: true },
                 { name: '貼石（細粒）', price: 3, quantity: true }
+            ]
+        };
+
+        const gelProcess = {
+            remove: [
+                { name: '不要卸甲', price: 0, nextStep: 'style' },
+                { name: '要卸甲', price: 50, nextStep: 'style' } // 假設卸甲加 $50，可根據實際調整
+            ],
+            extend: [
+                { name: '不要延長指甲', price: 0, nextStep: 'soak' },
+                { name: '要延長指甲', price: 10, quantity: true, nextStep: 'soak' }
+            ],
+            soak: [
+                { name: '不要浸腳', price: 0 },
+                { name: '要浸腳', price: 100 }
             ]
         };
 
@@ -212,62 +245,108 @@
         function renderMenu(category) {
             const menu = document.getElementById(`${category}Menu`);
             menu.innerHTML = '';
-            services[category].forEach(service => {
-                const btn = document.createElement('button');
-                btn.textContent = service.name;
-                btn.onclick = () => {
-                    currentService = service.name;
-                    if (service.prices && service.hasRemove) {
-                        showSubMenu(service);
-                    } else if (service.prices && service.quantity) {
-                        showQuantitySubMenu(service);
-                    } else if (service.subOptions) {
-                        showEyelashSubMenu(service.subOptions);
-                    } else if (service.quantity) {
-                        showQuantitySubMenu(service);
-                    } else {
-                        addToOrder(service.name, service.price, 1, category);
-                    }
-                };
-                menu.appendChild(btn);
-            });
+            if (category === 'gelHand' || category === 'gelFoot') {
+                services[category].forEach(service => {
+                    const btn = document.createElement('button');
+                    btn.textContent = service.name;
+                    btn.onclick = () => {
+                        currentService = service.name;
+                        currentStep = 1; // 開始流程
+                        showGelStep(category, service.nextStep);
+                    };
+                    menu.appendChild(btn);
+                });
+            } else {
+                services[category].forEach(service => {
+                    const btn = document.createElement('button');
+                    btn.textContent = service.name;
+                    btn.onclick = () => {
+                        currentService = service.name;
+                        if (service.subOptions) {
+                            showSubMenu(service.subOptions);
+                        } else {
+                            addToOrder(service.name, service.price, 1, category);
+                        }
+                    };
+                    menu.appendChild(btn);
+                });
+            }
         }
 
-        function showSubMenu(service) {
+        function showGelStep(category, step) {
             hideAll();
             const subMenu = document.getElementById('subMenu');
             subMenu.style.display = 'grid';
             subMenu.innerHTML = '';
-            if (service.prices.noRemove) {
-                const btnNoRemove = document.createElement('button');
-                btnNoRemove.textContent = `不需卸甲 $${service.prices.noRemove}`;
-                btnNoRemove.onclick = () => addToOrder(`${service.name}（不需卸甲）`, service.prices.noRemove, 1, currentCategory);
-                subMenu.appendChild(btnNoRemove);
-
-                const btnRemove = document.createElement('button');
-                btnRemove.textContent = `需卸甲 $${service.prices.remove}`;
-                btnRemove.onclick = () => addToOrder(`${service.name}（需卸甲）`, service.prices.remove, 1, currentCategory);
-                subMenu.appendChild(btnRemove);
+            if (step === 'style') {
+                document.getElementById('styleMenu').style.display = 'grid';
+                renderStyleMenu(category);
+            } else {
+                gelProcess[step].forEach(option => {
+                    const btn = document.createElement('button');
+                    btn.textContent = option.name + (option.price ? ` $${option.price}` : '');
+                    btn.onclick = () => {
+                        if (option.quantity) {
+                            showQuantitySubMenu(option, category);
+                        } else {
+                            addToOrder(`${currentService} - ${option.name}`, option.price, 1, category);
+                            currentStep++;
+                            const nextStep = option.nextStep;
+                            if (nextStep) {
+                                showGelStep(category, nextStep);
+                            } else {
+                                goHome();
+                            }
+                        }
+                    };
+                    subMenu.appendChild(btn);
+                });
             }
         }
 
-        function showEyelashSubMenu(subOptions) {
+        function renderStyleMenu(category) {
+            const menu = document.getElementById('styleMenu');
+            menu.innerHTML = '';
+            services.style.forEach(style => {
+                const btn = document.createElement('button');
+                btn.textContent = style.name + (style.price ? ` +$${style.price}` : '');
+                btn.onclick = () => {
+                    if (style.quantity) {
+                        showQuantitySubMenu(style, category);
+                    } else if (style.confirm) {
+                        if (confirm('雙色漸變價格為 $80，是否確認？')) {
+                            addToOrder(`${currentService} - ${style.name}`, style.price, 1, category);
+                        }
+                    } else {
+                        addToOrder(`${currentService} - ${style.name}`, style.price, 1, category);
+                    }
+                };
+                menu.appendChild(btn);
+            });
+            document.getElementById('nextMenu').style.display = 'grid';
+        }
+
+        function showSubMenu(subOptions) {
             hideAll();
             const subMenu = document.getElementById('subMenu');
             subMenu.style.display = 'grid';
             subMenu.innerHTML = '';
             subOptions.forEach(option => {
                 const btn = document.createElement('button');
-                btn.textContent = `${option.name} $0`;
+                btn.textContent = `${option.name} $${option.price}`;
                 btn.onclick = () => {
-                    addToOrder(option.name, option.price, 1, currentCategory, option.note);
-                    if (option.note) alert(option.note);
+                    if (option.quantity) {
+                        showQuantitySubMenu(option, currentCategory);
+                    } else {
+                        addToOrder(option.name, option.price, 1, currentCategory, option.note);
+                        if (option.note) alert(option.note);
+                    }
                 };
                 subMenu.appendChild(btn);
             });
         }
 
-        function showQuantitySubMenu(service) {
+        function showQuantitySubMenu(service, category) {
             hideAll();
             const subMenu = document.getElementById('subMenu');
             subMenu.style.display = 'grid';
@@ -281,17 +360,17 @@
             if (service.prices && service.prices.within7 !== undefined) {
                 const btnWithin7 = document.createElement('button');
                 btnWithin7.textContent = '7 日內免費補';
-                btnWithin7.onclick = () => addToOrder(`${service.name}（7 日內）`, 0, input.value, currentCategory);
+                btnWithin7.onclick = () => addToOrder(`${service.name}（7 日內）`, 0, input.value, category);
                 subMenu.appendChild(btnWithin7);
 
                 const btnAfter7 = document.createElement('button');
                 btnAfter7.textContent = `超過 7 日 $30/隻`;
-                btnAfter7.onclick = () => addToOrder(`${service.name}（超過 7 日）`, 30 * input.value, input.value, currentCategory);
+                btnAfter7.onclick = () => addToOrder(`${service.name}（超過 7 日）`, 30 * input.value, input.value, category);
                 subMenu.appendChild(btnAfter7);
 
                 const btnNonShop = document.createElement('button');
                 btnNonShop.textContent = `非本店 $50/隻`;
-                btnNonShop.onclick = () => addToOrder(`${service.name}（非本店）`, 50 * input.value, input.value, currentCategory);
+                btnNonShop.onclick = () => addToOrder(`${service.name}（非本店）`, 50 * input.value, input.value, category);
                 subMenu.appendChild(btnNonShop);
             } else {
                 const btn = document.createElement('button');
@@ -299,13 +378,39 @@
                 btn.onclick = () => {
                     if (service.confirm) {
                         if (confirm('雙色漸變價格為 $80，是否確認？')) {
-                            addToOrder(service.name, service.price * input.value, input.value, currentCategory);
+                            addToOrder(`${currentService} - ${service.name}`, service.price * input.value, input.value, category);
+                            if (currentStep === 3) {
+                                document.getElementById('styleMenu').style.display = 'grid';
+                                renderStyleMenu(category);
+                            }
                         }
                     } else {
-                        addToOrder(service.name, service.price * input.value, input.value, currentCategory);
+                        addToOrder(`${currentService} - ${service.name}`, service.price * input.value, input.value, category);
+                        if (currentStep === 3) {
+                            document.getElementById('styleMenu').style.display = 'grid';
+                            renderStyleMenu(category);
+                        } else {
+                            currentStep++;
+                            const nextStep = gelProcess[Object.keys(gelProcess)[currentStep - 1]].find(o => o.name === service.name)?.nextStep;
+                            if (nextStep) {
+                                showGelStep(category, nextStep);
+                            } else {
+                                goHome();
+                            }
+                        }
                     }
                 };
                 subMenu.appendChild(btn);
+            }
+        }
+
+        function goNext() {
+            currentStep++;
+            const nextStep = Object.keys(gelProcess)[currentStep - 1];
+            if (nextStep) {
+                showGelStep(currentCategory, nextStep);
+            } else {
+                goHome();
             }
         }
 
@@ -313,7 +418,6 @@
             currentTotal += price;
             currentOrder.push({ item, price, quantity, category, note });
             updateOrderDisplay();
-            goHome();
         }
 
         function updateOrderDisplay() {
@@ -341,6 +445,7 @@
         function clearOrder() {
             currentTotal = 0;
             currentOrder = [];
+            currentStep = 0;
             updateOrderDisplay();
             goHome();
         }
@@ -369,7 +474,15 @@
         }
 
         function goBack() {
-            if (document.getElementById('subMenu').style.display === 'grid') {
+            if (currentStep > 0 && (currentCategory === 'gelHand' || currentCategory === 'gelFoot')) {
+                currentStep--;
+                if (currentStep === 0) {
+                    goHome();
+                } else {
+                    const prevStep = Object.keys(gelProcess)[currentStep - 1];
+                    showGelStep(currentCategory, prevStep);
+                }
+            } else if (document.getElementById('subMenu').style.display === 'grid' || document.getElementById('styleMenu').style.display === 'grid') {
                 hideAll();
                 document.getElementById(`${currentCategory}Menu`).style.display = 'grid';
             } else if (document.getElementById('historyList').style.display === 'block') {
@@ -382,15 +495,20 @@
         function goHome() {
             hideAll();
             document.getElementById('mainMenu').style.display = 'grid';
+            currentStep = 0;
         }
 
         function hideAll() {
             document.getElementById('mainMenu').style.display = 'none';
-            document.getElementById('handMenu').style.display = 'none';
-            document.getElementById('footMenu').style.display = 'none';
+            document.getElementById('gelHandMenu').style.display = 'none';
+            document.getElementById('gelFootMenu').style.display = 'none';
+            document.getElementById('fixHandMenu').style.display = 'none';
+            document.getElementById('fixFootMenu').style.display = 'none';
             document.getElementById('eyelashMenu').style.display = 'none';
-            document.getElementById('styleMenu').style.display = 'none';
+            document.getElementById('otherMenu').style.display = 'none';
             document.getElementById('subMenu').style.display = 'none';
+            document.getElementById('styleMenu').style.display = 'none';
+            document.getElementById('nextMenu').style.display = 'none';
             document.getElementById('historyList').style.display = 'none';
         }
     </script>
