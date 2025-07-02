@@ -32,14 +32,14 @@
             margin: 5px 0;
         }
         .order-item button {
-            font-size: 12px; /* 與文字大小一致 */
-            padding: 2px 6px; /* 減少內邊距，控制按鈕大小 */
+            font-size: 12px;
+            padding: 2px 6px;
             margin-left: 5px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            height: auto; /* 自動調整高度 */
-            width: auto; /* 自動調整寬度 */
+            height: auto;
+            width: auto;
         }
         .delete-btn {
             background-color: #f44336;
@@ -89,6 +89,13 @@
         .nav-btn:hover {
             background-color: #1976D2;
         }
+        .next-btn {
+            background-color: #9C27B0; /* 下一頁使用紫色 */
+            color: white;
+        }
+        .next-btn:hover {
+            background-color: #7B1FA2;
+        }
         .clear-btn {
             background-color: #f44336;
             color: white;
@@ -120,6 +127,16 @@
             margin-bottom: 10px;
             border-radius: 5px;
             background-color: #fff;
+        }
+        .history-item button {
+            font-size: 15px; /* 歷史記錄刪除按鈕大小調整為 15px */
+            padding: 2px 6px;
+            margin-left: 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            height: auto;
+            width: auto;
         }
         @media (max-width: 600px) {
             button {
@@ -233,6 +250,7 @@
                 `;
             } else if (currentPage === 'history') {
                 renderHistory();
+                buttonsDiv.innerHTML = `<button class="nav-btn" onclick="navigate('home')">回首頁</button>`;
             } else if (currentPage === '其他小項') {
                 buttonsDiv.innerHTML = `
                     <button class="service-btn" onclick="navigate('卸')">卸</button>
@@ -257,7 +275,7 @@
                     buttonsDiv.innerHTML += `<button class="nav-btn" onclick="navigate('${flow[currentIndex - 1]}')">上一頁</button>`;
                 }
                 if (currentIndex < flow.length - 1) {
-                    buttonsDiv.innerHTML += `<button class="nav-btn" onclick="navigate('${flow[currentIndex + 1]}')">下一頁</button>`;
+                    buttonsDiv.innerHTML += `<button class="next-btn" onclick="navigate('${flow[currentIndex + 1]}')">下一頁</button>`;
                 }
                 buttonsDiv.innerHTML += `<button class="nav-btn" onclick="navigate('home')">回首頁</button>`;
             }
