@@ -9,7 +9,7 @@
       font-family: Arial, sans-serif;
       display: flex;
       flex-direction: column;
-      align-items: center; /* 內容置中 */
+      align-items: center;
       justify-content: center;
       min-height: 100vh;
       background-color: #f0f0f0;
@@ -17,34 +17,29 @@
       padding: 20px;
     }
     h1 {
-      font-size: 2.5em; /* 標題文字放大 */
+      font-size: 2.5em;
       color: #333;
     }
     label, input, button {
-      font-size: 1.5em; /* 選項和按鈕文字放大 */
+      font-size: 1.8em;
       margin: 10px 0;
     }
-    input[type="number"] {
-      width: 60px;
-      font-size: 1.5em;
-      padding: 5px;
-    }
     button {
-      padding: 10px 20px;
-      border-radius: 5px;
-      background-color: #ff6f61;
+      padding: 15px 30px;
+      border-radius: 8px;
+      background-color: #007bff;
       color: white;
       border: none;
       cursor: pointer;
       transition: background-color 0.3s;
     }
     button:hover {
-      background-color: #e55a50;
+      background-color: #0056b3;
     }
     .delete-btn {
       background-color: #e55a50;
-      font-size: 1.2em;
-      padding: 5px 10px;
+      font-size: 1.5em;
+      padding: 10px 20px;
     }
     .delete-btn:hover {
       background-color: #c7463e;
@@ -52,25 +47,25 @@
     .result-container {
       text-align: left;
       width: 100%;
-      max-width: 500px;
+      max-width: 600px;
     }
     #result {
-      font-size: 2.2em; /* 總計文字放大 */
-      font-weight: bold; /* 總計加粗 */
+      font-size: 2.2em;
+      font-weight: bold;
       color: #333;
     }
     #explanation {
-      font-size: 1.8em; /* 收費明細文字放大 */
+      font-size: 1.8em;
       color: #333;
     }
     .detail-item {
       display: block;
-      text-align: right; /* 細項和數字置右 */
+      text-align: right;
     }
     .note {
-      font-size: 0.8em; /* 括號內容小一號 */
+      font-size: 0.8em;
       display: block;
-      text-align: right; /* 括號內容置右 */
+      text-align: right;
     }
     .container {
       background-color: white;
@@ -78,7 +73,7 @@
       border-radius: 10px;
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
       width: 90%;
-      max-width: 500px;
+      max-width: 600px;
     }
     hr {
       border: 1px solid #ccc;
@@ -87,15 +82,15 @@
     .section-title {
       font-size: 1.6em;
       color: #555;
-      margin:  Subscriptions: 10px 0;
+      margin: 10px 0;
     }
     .sub-section {
-      margin-left: 20px;
-      display: none; /* 初始隱藏功能項 */
+      margin: 20px;
+      display: none;
     }
     table {
       width: 100%;
-      max-width: 500px;
+      max-width: 600px;
       border-collapse: collapse;
       margin-top: 20px;
       background-color: white;
@@ -112,7 +107,18 @@
       background-color: #f5f5f5;
     }
     .record-detail {
-      white-space: pre-wrap; /* 保留換行 */
+      white-space: pre-wrap;
+    }
+    .qty-btn {
+      font-size: 1.8em;
+      padding: 10px 20px;
+      margin: 0 5px;
+    }
+    .qty-display {
+      font-size: 1.8em;
+      min-width: 50px;
+      display: inline-block;
+      text-align: center;
     }
   </style>
 </head>
@@ -124,87 +130,86 @@
     <label><input type="checkbox" id="hand" onchange="toggleSection('hand')"> 手部服務</label><br>
     <div id="handSection" class="sub-section">
       <div class="section-title">手部功能項（單選）</div>
-      <label><input type="radio" name="handService" value="softGel"> Soft Gel</label><br>
-      <label><input type="radio" name="handService" value="hardGel"> Hard Gel</label><br>
-      <label><input type="radio" name="handService" value="wetManicure" onchange="togglePureRemove('hand')"> 無 Gel 浸水修手</label><br>
-      <label><input type="radio" name="handService" value="dryManicure" onchange="togglePureRemove('hand')"> 無浸水修手/卸甲後護理</label><br>
-      <label id="handPureRemoveLabel" style="display: none;"><input type="checkbox" id="handPureRemove"> 純卸甲 (+$80)</label><br>
+      <label><input type="radio" name="handService" value="softGel" onchange="calculate()"> Soft Gel</label><br>
+      <label><input type="radio" name="handService" value="hardGel" onchange="calculate()"> Hard Gel</label><br>
+      <label><input type="radio" name="handService" value="wetManicure" onchange="togglePureRemove('hand');calculate()"> 無 Gel 浸水修手</label><br>
+      <label><input type="radio" name="handService" value="dryManicure" onchange="togglePureRemove('hand');calculate()"> 無浸水修手/卸甲後護理</label><br>
+      <label id="handPureRemoveLabel" style="display: none;"><input type="checkbox" id="handPureRemove" onchange="calculate()"> 純卸甲 (+$80)</label><br>
       <div class="section-title">Soft Gel 選項</div>
-      <label><input type="checkbox" id="handSoftGelRemove"> 需卸甲 (+$50)</label>
-      <label><input type="checkbox" id="handSoftGelFrench"> 法式 (+$50)</label><br>
+      <label><input type="checkbox" id="handSoftGelRemove" onchange="calculate()"> 需卸甲 (+$50)</label>
+      <label><input type="checkbox" id="handSoftGelFrench" onchange="calculate()"> 法式 (+$50)</label><br>
       <div class="section-title">Hard Gel 選項</div>
-      <label><input type="checkbox" id="handHardGelRemove"> 需卸甲 (+$30)</label>
-      <label><input type="checkbox" id="handHardGelFrench"> 法式 (+$50)</label><br>
+      <label><input type="checkbox" id="handHardGelRemove" onchange="calculate()"> 需卸甲 (+$30)</label>
+      <label><input type="checkbox" id="handHardGelFrench" onchange="calculate()"> 法式 (+$50)</label><br>
       <div class="section-title">Gel 款式</div>
-      <label>牆上/新色版/閃粉 (+$50): <input type="number" id="handStyleGlitter" min="0" max="10" value="0"></label><br>
-      <label>貓眼 (+$80): <input type="number" id="handStyleCatEye" min="0" max="10" value="0"></label><br>
-      <label>多一隻色（跳色）(+$30): <input type="number" id="handStyleExtraColor" min="0" max="10" value="0"></label><br>
-      <label>捽粉 (+$100): <input type="number" id="handStylePowder" min="0" max="10" value="0"></label><br>
-      <label>有底色捽粉 (+$100): <input type="number" id="handStylePowderBase" min="0" max="10" value="0"></label>
-      <label><input type="radio" name="handPowderBaseCost" value="50"> +$50</label>
-      <label><input type="radio" name="handPowderBaseCost" value="30"> +$30</label><br>
-      <label>單色漸變 (+$80): <input type="number" id="handStyleGradient" min="0" max="10" value="0"></label><br>
-      <label>簡單畫花/貼紙 (每隻 +$10): <input type="number" id="handStyleDecoration" min="0" max="10" value="0"></label><br>
-      <label>貼石 (每粒 +$3): <input type="number" id="handStyleStone" min="0" max="10" value="0"></label><br>
+      <label>牆上/新色版/閃粉 (+$50): <button class="qty-btn" onclick="decrement('handStyleGlitter')">-</button> <span id="handStyleGlitterQty" class="qty-display">0</span> <button class="qty-btn" onclick="increment('handStyleGlitter')">+</button></label><br>
+      <label>貓眼 (+$80): <button class="qty-btn" onclick="decrement('handStyleCatEye')">-</button> <span id="handStyleCatEyeQty" class="qty-display">0</span> <button class="qty-btn" onclick="increment('handStyleCatEye')">+</button></label><br>
+      <label>多一隻色（跳色）(+$30): <button class="qty-btn" onclick="decrement('handStyleExtraColor')">-</button> <span id="handStyleExtraColorQty" class="qty-display">0</span> <button class="qty-btn" onclick="increment('handStyleExtraColor')">+</button></label><br>
+      <label>捽粉 (+$100): <button class="qty-btn" onclick="decrement('handStylePowder')">-</button> <span id="handStylePowderQty" class="qty-display">0</span> <button class="qty-btn" onclick="increment('handStylePowder')">+</button></label><br>
+      <label>有底色捽粉 (+$100): <button class="qty-btn" onclick="decrement('handStylePowderBase')">-</button> <span id="handStylePowderBaseQty" class="qty-display">0</span> <button class="qty-btn" onclick="increment('handStylePowderBase')" onchange="calculate()"></button></label>
+      <label><input type="radio" name="handPowderBaseCost" value="50" onchange="calculate()"> +$50</label>
+      <label><input type="radio" name="handPowderBaseCost" value="30" onchange="calculate()"> +$30</label><br>
+      <label>單色漸變 (+$80): <button class="qty-btn" onclick="decrement('handStyleGradient')">-</button> <span id="handStyleGradientQty" class="qty-display">0</span> <button class="qty-btn" onclick="increment('handStyleGradient')">+</button></label><br>
+      <label>簡單畫花/貼紙 (每隻 +$10): <button class="qty-btn" onclick="decrement('handStyleDecoration')">-</button> <span id="handStyleDecorationQty" class="qty-display">0</span> <button class="qty-btn" onclick="increment('handStyleDecoration')">+</button></label><br>
+      <label>貼石 (每粒 +$3): <button class="qty-btn" onclick="decrement('handStyleStone')">-</button> <span id="handStyleStoneQty" class="qty-display">0</span> <button class="qty-btn" onclick="increment('handStyleStone')">+</button></label><br>
       <div class="section-title">額外選項</div>
-      <label>做完 Gel 浸手修手 (+$100): <input type="number" id="handExtraSoak" min="0" max="10" value="0"></label><br>
-      <label>延長 (每隻 +$10, 僅限 Hard Gel): <input type="number" id="handExtraExtend" min="0" max="10" value="0"></label><br>
+      <label>做完 Gel 浸手修手 (+$100): <button class="qty-btn" onclick="decrement('handExtraSoak')">-</button> <span id="handExtraSoakQty" class="qty-display">0</span> <button class="qty-btn" onclick="increment('handExtraSoak')">+</button></label><br>
+      <label>延長 (每隻 +$10, 僅限 Hard Gel): <button class="qty-btn" onclick="decrement('handExtraExtend')">-</button> <span id="handExtraExtendQty" class="qty-display">0</span> <button class="qty-btn" onclick="increment('handExtraExtend')">+</button></label><br>
       <div class="section-title">Gel 補甲</div>
-      <label><input type="radio" name="handRepair" value="free"> 7 日內免費</label>
-      <label><input type="radio" name="handRepair" value="inStore"> 超過 7 日 (本店 $30/隻)</label>
-      <label><input type="radio" name="handRepair" value="outStore"> 超過 7 日 (非本店 $50/隻)</label>
-      <label>補甲數量: <input type="number" id="handRepairQty" min="0" max="10" value="0"></label><br>
+      <label><input type="radio" name="handRepair" value="free" onchange="calculate()"> 7 日內免費</label>
+      <label><input type="radio" name="handRepair" value="inStore" onchange="calculate()"> 超過 7 日 (本店 $30/隻)</label>
+      <label><input type="radio" name="handRepair" value="outStore" onchange="calculate()"> 超過 7 日 (非本店 $50/隻)</label>
+      <label>補甲數量: <button class="qty-btn" onclick="decrement('handRepairQty')">-</button> <span id="handRepairQtyQty" class="qty-display">0</span> <button class="qty-btn" onclick="increment('handRepairQty')">+</button></label><br>
     </div>
 
     <label><input type="checkbox" id="foot" onchange="toggleSection('foot')"> 腳部服務</label><br>
     <div id="footSection" class="sub-section">
       <div class="section-title">腳部功能項（單選）</div>
-      <label><input type="radio" name="footService" value="softGel"> Soft Gel</label><br>
-      <label><input type="radio" name="footService" value="hardGel"> Hard Gel</label><br>
-      <label><input type="radio" name="footService" value="wetPedicure" onchange="togglePureRemove('foot')"> 無 Gel 浸水修腳</label><br>
-      <label><input type="radio" name="footService" value="dryPedicure" onchange="togglePureRemove('foot')"> 無浸水修腳/卸甲後護理</label><br>
-      <label id="footPureRemoveLabel" style="display: none;"><input type="checkbox" id="footPureRemove"> 純卸甲 (+$100)</label><br>
+      <label><input type="radio" name="footService" value="softGel" onchange="calculate()"> Soft Gel</label><br>
+      <label><input type="radio" name="footService" value="hardGel" onchange="calculate()"> Hard Gel</label><br>
+      <label><input type="radio" name="footService" value="wetPedicure" onchange="togglePureRemove('foot');calculate()"> 無 Gel 浸水修腳</label><br>
+      <label><input type="radio" name="footService" value="dryPedicure" onchange="togglePureRemove('foot');calculate()"> 無浸水修腳/卸甲後護理</label><br>
+      <label id="footPureRemoveLabel" style="display: none;"><input type="checkbox" id="footPureRemove" onchange="calculate()"> 純卸甲 (+$100)</label><br>
       <div class="section-title">Soft Gel 選項</div>
-      <label><input type="checkbox" id="footSoftGelRemove"> 需卸甲 (+$50)</label><br>
-      <label><input type="checkbox" id="footSoftGelFrench"> 法式 (+$50)</label><br>
+      <label><input type="checkbox" id="footSoftGelRemove" onchange="calculate()"> 需卸甲 (+$50)</label><br>
+      <label><input type="checkbox" id="footSoftGelFrench" onchange="calculate()"> 法式 (+$50)</label><br>
       <div class="section-title">Hard Gel 選項</div>
-      <label><input type="checkbox" id="footHardGelFrench"> 法式 (+$50)</label><br>
+      <label><input type="checkbox" id="footHardGelFrench" onchange="calculate()"> 法式 (+$50)</label><br>
       <div class="section-title">Gel 款式</div>
-      <label>牆上/新色版/閃粉 (+$50): <input type="number" id="footStyleGlitter" min="0" max="10" value="0"></label><br>
-      <label>貓眼 (+$80): <input type="number" id="footStyleCatEye" min="0" max="10" value="0"></label><br>
-      <label>多一隻色（跳色）(+$30): <input type="number" id="footStyleExtraColor" min="0" max="10" value="0"></label><br>
-      <label>捽粉 (+$100): <input type="number" id="footStylePowder" min="0" max="10" value="0"></label><br>
-      <label>有底色捽粉 (+$100): <input type="number" id="footStylePowderBase" min="0" max="10" value="0"></label>
-      <label><input type="radio" name="footPowderBaseCost" value="50"> +$50</label>
-      <label><input type="radio" name="footPowderBaseCost" value="30"> +$30</label><br>
-      <label>單色漸變 (+$80): <input type="number" id="footStyleGradient" min="0" max="10" value="0"></label><br>
-      <label>簡單畫花/貼紙 (每隻 +$10): <input type="number" id="footStyleDecoration" min="0" max="10" value="0"></label><br>
-      <label>貼石 (每粒 +$3): <input type="number" id="footStyleStone" min="0" max="10" value="0"></label><br>
+      <label>牆上/新色版/閃粉 (+$50): <button class="qty-btn" onclick="decrement('footStyleGlitter')">-</button> <span id="footStyleGlitterQty" class="qty-display">0</span> <button class="qty-btn" onclick="increment('footStyleGlitter')">+</button></label><br>
+      <label>貓眼 (+$80): <button class="qty-btn" onclick="decrement('footStyleCatEye')">-</button> <span id="footStyleCatEyeQty" class="qty-display">0</span> <button class="qty-btn" onclick="increment('footStyleCatEye')">+</button></label><br>
+      <label>多一隻色（跳色）(+$30): <button class="qty-btn" onclick="decrement('footStyleExtraColor')">-</button> <span id="footStyleExtraColorQty" class="qty-display">0</span> <button class="qty-btn" onclick="increment('footStyleExtraColor')">+</button></label><br>
+      <label>捽粉 (+$100): <button class="qty-btn" onclick="decrement('footStylePowder')">-</button> <span id="footStylePowderQty" class="qty-display">0</span> <button class="qty-btn" onclick="increment('footStylePowder')">+</button></label><br>
+      <label>有底色捽粉 (+$100): <button class="qty-btn" onclick="decrement('footStylePowderBase')">-</button> <span id="footStylePowderBaseQty" class="qty-display">0</span> <button class="qty-btn" onclick="increment('footStylePowderBase')">+</button></label>
+      <label><input type="radio" name="footPowderBaseCost" value="50" onchange="calculate()"> +$50</label>
+      <label><input type="radio" name="footPowderBaseCost" value="30" onchange="calculate()"> +$30</label><br>
+      <label>單色漸變 (+$80): <button class="qty-btn" onclick="decrement('footStyleGradient')">-</button> <span id="footStyleGradientQty" class="qty-display">0</span> <button class="qty-btn" onclick="increment('footStyleGradient')">+</button></label><br>
+      <label>簡單畫花/貼紙 (每隻 +$10): <button class="qty-btn" onclick="decrement('footStyleDecoration')">-</button> <span id="footStyleDecorationQty" class="qty-display">0</span> <button class="qty-btn" onclick="increment('footStyleDecoration')">+</button></label><br>
+      <label>貼石 (每粒 +$3): <button class="qty-btn" onclick="decrement('footStyleStone')">-</button> <span id="footStyleStoneQty" class="qty-display">0</span> <button class="qty-btn" onclick="increment('footStyleStone')">+</button></label><br>
       <div class="section-title">額外選項</div>
-      <label>做完 Gel 浸腳修腳 (+$100): <input type="number" id="footExtraSoak" min="0" max="10" value="0"></label><br>
-      <label>延長 (每隻 +$10, 僅限 Hard Gel): <input type="number" id="footExtraExtend" min="0" max="10" value="0"></label><br>
+      <label>做完 Gel 浸腳修腳 (+$100): <button class="qty-btn" onclick="decrement('footExtraSoak')">-</button> <span id="footExtraSoakQty" class="qty-display">0</span> <button class="qty-btn" onclick="increment('footExtraSoak')">+</button></label><br>
+      <label>延長 (每隻 +$10, 僅限 Hard Gel): <button class="qty-btn" onclick="decrement('footExtraExtend')">-</button> <span id="footExtraExtendQty" class="qty-display">0</span> <button class="qty-btn" onclick="increment('footExtraExtend')">+</button></label><br>
       <div class="section-title">Gel 補甲</div>
-      <label><input type="radio" name="footRepair" value="free"> 7 日內免費</label>
-      <label><input type="radio" name="footRepair" value="inStore"> 超過 7 日 (本店 $30/隻)</label>
-      <label><input type="radio" name="footRepair" value="outStore"> 超過 7 日 (非本店 $50/隻)</label>
-      <label>補甲數量: <input type="number" id="footRepairQty" min="0" max="10" value="0"></label><br>
+      <label><input type="radio" name="footRepair" value="free" onchange="calculate()"> 7 日內免費</label>
+      <label><input type="radio" name="footRepair" value="inStore" onchange="calculate()"> 超過 7 日 (本店 $30/隻)</label>
+      <label><input type="radio" name="footRepair" value="outStore" onchange="calculate()"> 超過 7 日 (非本店 $50/隻)</label>
+      <label>補甲數量: <button class="qty-btn" onclick="decrement('footRepairQty')">-</button> <span id="footRepairQtyQty" class="qty-display">0</span> <button class="qty-btn" onclick="increment('footRepairQty')">+</button></label><br>
     </div>
 
     <label><input type="checkbox" id="eyelash" onchange="toggleSection('eyelash')"> 眼睫毛服務</label><br>
     <div id="eyelashSection" class="sub-section">
       <div class="section-title">眼睫毛功能項（單選）</div>
-      <label><input type="radio" name="eyelashService" value="natural"> 自然款 ($368)</label><br>
-      <label><input type="radio" name="eyelashService" value="dense"> 濃密款 ($468)</label><br>
-      <label><input type="radio" name="eyelashService" value="special"> 特殊款 ($568)</label><br>
-      <label><input type="radio" name="eyelashService" value="package"> 套票補睫 (免費，需簿仔簽名)</label><br>
-      <label><input type="radio" name="eyelashService" value="cashRepair"> 現金補睫 ($298)</label><br>
-      <label><input type="radio" name="eyelashService" value="remove"> 純卸睫 ($150)</label><br>
-      <label><input type="radio" name="eyelashService" value="tenDay"> 10 日補睫 (免費)</label><br>
+      <label><input type="radio" name="eyelashService" value="natural" onchange="calculate()"> 自然款 ($368)</label><br>
+      <label><input type="radio" name="eyelashService" value="dense" onchange="calculate()"> 濃密款 ($468)</label><br>
+      <label><input type="radio" name="eyelashService" value="special" onchange="calculate()"> 特殊款 ($568)</label><br>
+      <label><input type="radio" name="eyelashService" value="package" onchange="calculate()"> 套票補睫 (免費，需簿仔簽名)</label><br>
+      <label><input type="radio" name="eyelashService" value="cashRepair" onchange="calculate()"> 現金補睫 ($298)</label><br>
+      <label><input type="radio" name="eyelashService" value="remove" onchange="calculate()"> 純卸睫 ($150)</label><br>
+      <label><input type="radio" name="eyelashService" value="tenDay" onchange="calculate()"> 10 日補睫 (免費)</label><br>
     </div>
 
-    <hr> <!-- 分隔線 -->
+    <hr>
 
-    <button onclick="calculate()">計算費用</button>
     <button onclick="addRecord()">加入記錄</button>
     <div class="result-container">
       <p id="result">總計: $0</p>
@@ -213,6 +218,7 @@
   </div>
 
   <div class="section-title">記錄</div>
+  <label>篩選日期: <input type="date" id="recordFilter" onchange="filterRecords()"></label>
   <table id="recordTable">
     <thead>
       <tr>
@@ -225,19 +231,17 @@
   </table>
 
   <script>
-    // 初始化記錄（從 localStorage 載入）
+    // 初始化記錄
     let records = JSON.parse(localStorage.getItem('nailRecords')) || [];
     renderRecords();
 
     function toggleSection(section) {
-      const handSection = document.getElementById('handSection');
-      const footSection = document.getElementById('footSection');
-      const eyelashSection = document.getElementById('eyelashSection');
-      handSection.style.display = document.getElementById('hand').checked ? 'block' : 'none';
-      footSection.style.display = document.getElementById('foot').checked ? 'block' : 'none';
-      eyelashSection.style.display = document.getElementById('eyelash').checked ? 'block' : 'none';
+      document.getElementById('handSection').style.display = document.getElementById('hand').checked ? 'block' : 'none';
+      document.getElementById('footSection').style.display = document.getElementById('foot').checked ? 'block' : 'none';
+      document.getElementById('eyelashSection').style.display = document.getElementById('eyelash').checked ? 'block' : 'none';
       togglePureRemove('hand');
       togglePureRemove('foot');
+      calculate();
     }
 
     function togglePureRemove(section) {
@@ -250,12 +254,24 @@
         const footService = document.querySelector('input[name="footService"]:checked');
         footPureRemoveLabel.style.display = footService && (footService.value === 'wetPedicure' || footService.value === 'dryPedicure') ? 'block' : 'none';
       }
+      calculate();
+    }
+
+    function increment(id) {
+      let qty = parseInt(document.getElementById(id + 'Qty').innerText) || 0;
+      document.getElementById(id + 'Qty').innerText = Math.min(qty + 1, 10);
+      calculate();
+    }
+
+    function decrement(id) {
+      let qty = parseInt(document.getElementById(id + 'Qty').innerText) || 0;
+      document.getElementById(id + 'Qty').innerText = Math.max(qty - 1, 0);
+      calculate();
     }
 
     function calculate() {
       let total = 0;
       let explanation = "收費明細：<br>";
-      let addOnFees = [];
       let servicesSelected = false;
 
       // 手部服務
@@ -288,43 +304,74 @@
           }
 
           // Gel 款式
-          let baseTotal = total;
-          const glitterQty = parseInt(document.getElementById('handStyleGlitter').value) || 0;
-          if (glitterQty > 0) addOnFees.push({ name: '手部 牆上/新色版/閃粉', fee: 50, qty: glitterQty });
-          const catEyeQty = parseInt(document.getElementById('handStyleCatEye').value) || 0;
-          if (catEyeQty > 0) addOnFees.push({ name: '手部 貓眼', fee: 80, qty: catEyeQty });
-          const extraColorQty = parseInt(document.getElementById('handStyleExtraColor').value) || 0;
-          if (extraColorQty > 0) addOnFees.push({ name: '手部 多一隻色（跳色）', fee: 30, qty: extraColorQty });
-          const powderQty = parseInt(document.getElementById('handStylePowder').value) || 0;
-          if (powderQty > 0) addOnFees.push({ name: '手部 捽粉', fee: 100, qty: powderQty });
-          const powderBaseQty = parseInt(document.getElementById('handStylePowderBase').value) || 0;
+          const glitterQty = parseInt(document.getElementById('handStyleGlitterQty').innerText) || 0;
+          if (glitterQty > 0) {
+            total += 50 * glitterQty;
+            explanation += `<span class="detail-item">手部 牆上/新色版/閃粉 ${glitterQty} × $50</span><br>`;
+          }
+          const catEyeQty = parseInt(document.getElementById('handStyleCatEyeQty').innerText) || 0;
+          if (catEyeQty > 0) {
+            total += 80 * catEyeQty;
+            explanation += `<span class="detail-item">手部 貓眼 ${catEyeQty} × $80</span><br>`;
+          }
+          const extraColorQty = parseInt(document.getElementById('handStyleExtraColorQty').innerText) || 0;
+          if (extraColorQty > 0) {
+            total += 30 * extraColorQty;
+            explanation += `<span class="detail-item">手部 多一隻色（跳色） ${extraColorQty} × $30</span><br>`;
+          }
+          const powderQty = parseInt(document.getElementById('handStylePowderQty').innerText) || 0;
+          if (powderQty > 0) {
+            total += 100 * powderQty;
+            explanation += `<span class="detail-item">手部 捽粉 ${powderQty} × $100</span><br>`;
+          }
+          const powderBaseQty = parseInt(document.getElementById('handStylePowderBaseQty').innerText) || 0;
           if (powderBaseQty > 0) {
             const powderBaseCost = document.querySelector('input[name="handPowderBaseCost"]:checked')?.value || 50;
-            addOnFees.push({ name: `手部 有底色捽粉 (+$${powderBaseCost})`, fee: 100 + parseInt(powderBaseCost), qty: powderBaseQty });
+            const totalPowderBaseCost = (100 + parseInt(powderBaseCost)) * powderBaseQty;
+            total += totalPowderBaseCost;
+            explanation += `<span class="detail-item">手部 有底色捽粉 (+$${powderBaseCost}) ${powderBaseQty} × $${100 + parseInt(powderBaseCost)}</span><br>`;
           }
-          const gradientQty = parseInt(document.getElementById('handStyleGradient').value) || 0;
-          if (gradientQty > 0) addOnFees.push({ name: '手部 單色漸變', fee: 80, qty: gradientQty, note: '（雙色漸變有時也是 $80，需確認）' });
-          const decorationQty = parseInt(document.getElementById('handStyleDecoration').value) || 0;
-          if (decorationQty > 0) addOnFees.push({ name: '手部 簡單畫花/貼紙', fee: 10, qty: decorationQty });
-          const stoneQty = parseInt(document.getElementById('handStyleStone').value) || 0;
-          if (stoneQty > 0) addOnFees.push({ name: '手部 貼石', fee: 3, qty: stoneQty });
+          const gradientQty = parseInt(document.getElementById('handStyleGradientQty').innerText) || 0;
+          if (gradientQty > 0) {
+            total += 80 * gradientQty;
+            explanation += `<span class="detail-item">手部 單色漸變 ${gradientQty} × $80</span><br>`;
+            explanation += `<span class="note">（雙色漸變有時也是 $80，需確認）</span><br>`;
+          }
+          const decorationQty = parseInt(document.getElementById('handStyleDecorationQty').innerText) || 0;
+          if (decorationQty > 0) {
+            total += 10 * decorationQty;
+            explanation += `<span class="detail-item">手部 簡單畫花/貼紙 ${decorationQty} × $10</span><br>`;
+          }
+          const stoneQty = parseInt(document.getElementById('handStyleStoneQty').innerText) || 0;
+          if (stoneQty > 0) {
+            total += 3 * stoneQty;
+            explanation += `<span class="detail-item">手部 貼石 ${stoneQty} × $3</span><br>`;
+          }
 
           // 額外選項
-          const soakQty = parseInt(document.getElementById('handExtraSoak').value) || 0;
-          if (soakQty > 0) addOnFees.push({ name: '手部 做完 Gel 浸手修手', fee: 100, qty: soakQty });
-          const extendQty = parseInt(document.getElementById('handExtraExtend').value) || 0;
-          if (extendQty > 0 && handService?.value === 'hardGel') addOnFees.push({ name: '手部 延長', fee: 10, qty: extendQty });
+          const soakQty = parseInt(document.getElementById('handExtraSoakQty').innerText) || 0;
+          if (soakQty > 0) {
+            total += 100 * soakQty;
+            explanation += `<span class="detail-item">手部 做完 Gel 浸手修手 ${soakQty} × $100</span><br>`;
+          }
+          const extendQty = parseInt(document.getElementById('handExtraExtendQty').innerText) || 0;
+          if (extendQty > 0 && handService?.value === 'hardGel') {
+            total += 10 * extendQty;
+            explanation += `<span class="detail-item">手部 延長 ${extendQty} × $10</span><br>`;
+          }
 
           // 補甲
           const repairType = document.querySelector('input[name="handRepair"]:checked')?.value;
-          const repairQty = parseInt(document.getElementById('handRepairQty').value) || 0;
+          const repairQty = parseInt(document.getElementById('handRepairQtyQty').innerText) || 0;
           if (repairType && repairQty > 0) {
             if (repairType === 'free') {
               explanation += `<span class="detail-item">手部 Gel 補甲 ${repairQty} × $0 (7 日內免費)</span><br>`;
             } else if (repairType === 'inStore') {
-              addOnFees.push({ name: '手部 Gel 補甲 (本店)', fee: 30, qty: repairQty });
+              total += 30 * repairQty;
+              explanation += `<span class="detail-item">手部 Gel 補甲 (本店) ${repairQty} × $30</span><br>`;
             } else if (repairType === 'outStore') {
-              addOnFees.push({ name: '手部 Gel 補甲 (非本店)', fee: 50, qty: repairQty });
+              total += 50 * repairQty;
+              explanation += `<span class="detail-item">手部 Gel 補甲 (非本店) ${repairQty} × $50</span><br>`;
             }
           }
         }
@@ -358,42 +405,74 @@
           }
 
           // Gel 款式
-          const glitterQty = parseInt(document.getElementById('footStyleGlitter').value) || 0;
-          if (glitterQty > 0) addOnFees.push({ name: '腳部 牆上/新色版/閃粉', fee: 50, qty: glitterQty });
-          const catEyeQty = parseInt(document.getElementById('footStyleCatEye').value) || 0;
-          if (catEyeQty > 0) addOnFees.push({ name: '腳部 貓眼', fee: 80, qty: catEyeQty });
-          const extraColorQty = parseInt(document.getElementById('footStyleExtraColor').value) || 0;
-          if (extraColorQty > 0) addOnFees.push({ name: '腳部 多一隻色（跳色）', fee: 30, qty: extraColorQty });
-          const powderQty = parseInt(document.getElementById('footStylePowder').value) || 0;
-          if (powderQty > 0) addOnFees.push({ name: '腳部 捽粉', fee: 100, qty: powderQty });
-          const powderBaseQty = parseInt(document.getElementById('footStylePowderBase').value) || 0;
+          const glitterQty = parseInt(document.getElementById('footStyleGlitterQty').innerText) || 0;
+          if (glitterQty > 0) {
+            total += 50 * glitterQty;
+            explanation += `<span class="detail-item">腳部 牆上/新色版/閃粉 ${glitterQty} × $50</span><br>`;
+          }
+          const catEyeQty = parseInt(document.getElementById('footStyleCatEyeQty').innerText) || 0;
+          if (catEyeQty > 0) {
+            total += 80 * catEyeQty;
+            explanation += `<span class="detail-item">腳部 貓眼 ${catEyeQty} × $80</span><br>`;
+          }
+          const extraColorQty = parseInt(document.getElementById('footStyleExtraColorQty').innerText) || 0;
+          if (extraColorQty > 0) {
+            total += 30 * extraColorQty;
+            explanation += `<span class="detail-item">腳部 多一隻色（跳色） ${extraColorQty} × $30</span><br>`;
+          }
+          const powderQty = parseInt(document.getElementById('footStylePowderQty').innerText) || 0;
+          if (powderQty > 0) {
+            total += 100 * powderQty;
+            explanation += `<span class="detail-item">腳部 捽粉 ${powderQty} × $100</span><br>`;
+          }
+          const powderBaseQty = parseInt(document.getElementById('footStylePowderBaseQty').innerText) || 0;
           if (powderBaseQty > 0) {
             const powderBaseCost = document.querySelector('input[name="footPowderBaseCost"]:checked')?.value || 50;
-            addOnFees.push({ name: `腳部 有底色捽粉 (+$${powderBaseCost})`, fee: 100 + parseInt(powderBaseCost), qty: powderBaseQty });
+            const totalPowderBaseCost = (100 + parseInt(powderBaseCost)) * powderBaseQty;
+            total += totalPowderBaseCost;
+            explanation += `<span class="detail-item">腳部 有底色捽粉 (+$${powderBaseCost}) ${powderBaseQty} × $${100 + parseInt(powderBaseCost)}</span><br>`;
           }
-          const gradientQty = parseInt(document.getElementById('footStyleGradient').value) || 0;
-          if (gradientQty > 0) addOnFees.push({ name: '腳部 單色漸變', fee: 80, qty: gradientQty, note: '（雙色漸變有時也是 $80，需確認）' });
-          const decorationQty = parseInt(document.getElementById('footStyleDecoration').value) || 0;
-          if (decorationQty > 0) addOnFees.push({ name: '腳部 簡單畫花/貼紙', fee: 10, qty: decorationQty });
-          const stoneQty = parseInt(document.getElementById('footStyleStone').value) || 0;
-          if (stoneQty > 0) addOnFees.push({ name: '腳部 貼石', fee: 3, qty: stoneQty });
+          const gradientQty = parseInt(document.getElementById('footStyleGradientQty').innerText) || 0;
+          if (gradientQty > 0) {
+            total += 80 * gradientQty;
+            explanation += `<span class="detail-item">腳部 單色漸變 ${gradientQty} × $80</span><br>`;
+            explanation += `<span class="note">（雙色漸變有時也是 $80，需確認）</span><br>`;
+          }
+          const decorationQty = parseInt(document.getElementById('footStyleDecorationQty').innerText) || 0;
+          if (decorationQty > 0) {
+            total += 10 * decorationQty;
+            explanation += `<span class="detail-item">腳部 簡單畫花/貼紙 ${decorationQty} × $10</span><br>`;
+          }
+          const stoneQty = parseInt(document.getElementById('footStyleStoneQty').innerText) || 0;
+          if (stoneQty > 0) {
+            total += 3 * stoneQty;
+            explanation += `<span class="detail-item">腳部 貼石 ${stoneQty} × $3</span><br>`;
+          }
 
           // 額外選項
-          const soakQty = parseInt(document.getElementById('footExtraSoak').value) || 0;
-          if (soakQty > 0) addOnFees.push({ name: '腳部 做完 Gel 浸腳修腳', fee: 100, qty: soakQty });
-          const extendQty = parseInt(document.getElementById('footExtraExtend').value) || 0;
-          if (extendQty > 0 && footService?.value === 'hardGel') addOnFees.push({ name: '腳部 延長', fee: 10, qty: extendQty });
+          const soakQty = parseInt(document.getElementById('footExtraSoakQty').innerText) || 0;
+          if (soakQty > 0) {
+            total += 100 * soakQty;
+            explanation += `<span class="detail-item">腳部 做完 Gel 浸腳修腳 ${soakQty} × $100</span><br>`;
+          }
+          const extendQty = parseInt(document.getElementById('footExtraExtendQty').innerText) || 0;
+          if (extendQty > 0 && footService?.value === 'hardGel') {
+            total += 10 * extendQty;
+            explanation += `<span class="detail-item">腳部 延長 ${extendQty} × $10</span><br>`;
+          }
 
           // 補甲
           const repairType = document.querySelector('input[name="footRepair"]:checked')?.value;
-          const repairQty = parseInt(document.getElementById('footRepairQty').value) || 0;
+          const repairQty = parseInt(document.getElementById('footRepairQtyQty').innerText) || 0;
           if (repairType && repairQty > 0) {
             if (repairType === 'free') {
               explanation += `<span class="detail-item">腳部 Gel 補甲 ${repairQty} × $0 (7 日內免費)</span><br>`;
             } else if (repairType === 'inStore') {
-              addOnFees.push({ name: '腳部 Gel 補甲 (本店)', fee: 30, qty: repairQty });
+              total += 30 * repairQty;
+              explanation += `<span class="detail-item">腳部 Gel 補甲 (本店) ${repairQty} × $30</span><br>`;
             } else if (repairType === 'outStore') {
-              addOnFees.push({ name: '腳部 Gel 補甲 (非本店)', fee: 50, qty: repairQty });
+              total += 50 * repairQty;
+              explanation += `<span class="detail-item">腳部 Gel 補甲 (非本店) ${repairQty} × $50</span><br>`;
             }
           }
         }
@@ -448,7 +527,7 @@
 
     function addRecord() {
       if (!window.currentResult || !window.currentResult.explanation.includes("detail-item")) {
-        alert("請先計算費用並選擇至少一項服務！");
+        alert("請先選擇至少一項服務！");
         return;
       }
 
@@ -468,11 +547,11 @@
       renderRecords();
     }
 
-    function renderRecords() {
+    function renderRecords(filteredRecords = records) {
       const tbody = document.getElementById("recordBody");
       tbody.innerHTML = "";
 
-      records.forEach((record, index) => {
+      filteredRecords.forEach((record, index) => {
         const row = document.createElement("tr");
         row.innerHTML = `
           <td>${record.date}</td>
@@ -481,6 +560,17 @@
         `;
         tbody.appendChild(row);
       });
+    }
+
+    function filterRecords() {
+      const filterDate = document.getElementById('recordFilter').value;
+      if (filterDate) {
+        const formattedDate = filterDate.replace(/-/g, '/');
+        const filtered = records.filter(r => r.date === formattedDate);
+        renderRecords(filtered);
+      } else {
+        renderRecords();
+      }
     }
 
     function deleteRecord(index) {
