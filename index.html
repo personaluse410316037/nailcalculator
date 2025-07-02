@@ -338,6 +338,7 @@
                 menu.appendChild(btn);
             });
             document.getElementById('nextMenu').style.display = 'grid';
+            document.getElementById('navButtons').style.display = 'grid'; // 確保款式頁有導航按鈕
         }
 
         function showSubMenu(subOptions) {
@@ -359,6 +360,7 @@
                 };
                 subMenu.appendChild(btn);
             });
+            document.getElementById('navButtons').style.display = 'grid'; // 確保子頁面有導航按鈕
         }
 
         function showQuantitySubMenu(service, category, parentService = null) {
@@ -418,6 +420,7 @@
                 };
                 subMenu.appendChild(btn);
             }
+            document.getElementById('navButtons').style.display = 'grid'; // 確保數量輸入頁有導航按鈕
         }
 
         function goNext() {
