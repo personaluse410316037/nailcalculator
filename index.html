@@ -1,19 +1,72 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-HK">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>美甲收費計算機</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center; /* 內容置中 */
+      justify-content: center;
+      min-height: 100vh;
+      background-color: #f0f0f0;
+      margin: 0;
+    }
+    h1 {
+      font-size: 2.5em; /* 標題文字放大 */
+      color: #333;
+    }
+    label, select, input, button {
+      font-size: 1.5em; /* 選項和按鈕文字放大 */
+      margin: 10px 0;
+    }
+    select, button {
+      padding: 10px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button {
+      background-color: #ff6f61;
+      color: white;
+      border: none;
+      transition: background-color 0.3s;
+    }
+    button:hover {
+      background-color: #e55a50;
+    }
+    p {
+      font-size: 1.8em; /* 結果文字放大 */
+      color: #333;
+      text-align: center;
+    }
+    .container {
+      background-color: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      width: 90%;
+      max-width: 500px;
+    }
+  </style>
 </head>
 <body>
-  <h1>美甲收費計算機</h1>
-  <label>選擇服務：</label>
-  <select id="service">
-    <option value="basic">基礎美甲 ($100)</option>
-    <option value="gel">凝膠甲 ($150)</option>
-  </select><br>
-  <label><input type="checkbox" id="complex"> 複雜彩繪 (+$20)</label><br>
-  <button onclick="calculate()">計算</button>
-  <p id="result"></p>
-  <p id="explanation"></p>
+  <div class="container">
+    <h1>美甲收費計算機</h1>
+    <label>選擇服務：</label>
+    <select id="service">
+      <option value="basic">基礎美甲 ($100)</option>
+      <option value="gel">凝膠甲 ($150)</option>
+      <option value="french">法式美甲 ($120)</option>
+    </select><br>
+    <label><input type="checkbox" id="complex"> 複雜彩繪 (+$20)</label><br>
+    <label><input type="checkbox" id="gelAdd"> 凝膠加成 (+50%)</label><br>
+    <button onclick="calculate()">計算費用</button>
+    <p id="result">總計: $0</p>
+    <p id="explanation">收費明細：請選擇服務</p>
+  </div>
 
   <script>
     function calculate() {
@@ -21,19 +74,34 @@
       let explanation = "收費明細：";
       let service = document.getElementById("service").value;
       let complex = document.getElementById("complex").checked;
+      let gelAdd = document.getElementById("gelAdd").checked;
 
-      if (service == "basic") {
+      // 基礎價格
+      if (service === "basic") {
         total = 100;
         explanation += "基礎美甲 $100";
-      } else if (service == "gel") {
+      } else if (service === "gel") {
         total = 150;
         explanation += "凝膠甲 $150";
+      } else if (service === "french") {
+        total = 120;
+        explanation += "法式美甲 $120";
       }
+
+      // 條件規則：凝膠加成
+      if (gelAdd) {
+        let gelFee = total * 0.5;
+        total += gelFee;
+        explanation += ", 凝膠加成 $" + gelFee;
+      }
+
+      // 條件規則：複雜彩繪
       if (complex) {
         total += 20;
         explanation += ", 複雜彩繪 $20";
       }
 
+      // 更新顯示
       document.getElementById("result").innerText = "總計: $" + total;
       document.getElementById("explanation").innerText = explanation;
     }
