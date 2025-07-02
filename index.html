@@ -44,10 +44,25 @@
     .delete-btn:hover {
       background-color: #c7463e;
     }
-    p {
-      font-size: 1.8em; /* 結果文字放大 */
+    .result-container {
+      text-align: left;
+      width: 100%;
+      max-width: 500px;
+    }
+    #result {
+      font-size: 2.2em; /* 總計文字放大 */
+      font-weight: bold; /* 總計加粗 */
       color: #333;
-      text-align: center;
+    }
+    #explanation {
+      font-size: 1.8em; /* 收費明細文字放大 */
+      color: #333;
+    }
+    .detail-item {
+      text-align: right; /* 細項和數字置右 */
+    }
+    .note {
+      font-size: 1.4em; /* 括號內容小一號 */
     }
     .container {
       background-color: white;
@@ -84,6 +99,9 @@
     th {
       background-color: #f5f5f5;
     }
+    .record-detail {
+      white-space: pre-wrap; /* 保留換行 */
+    }
   </style>
 </head>
 <body>
@@ -110,8 +128,10 @@
     
     <button onclick="calculate()">計算費用</button>
     <button onclick="addRecord()">加入記錄</button>
-    <p id="result">總計: $0</p>
-    <p id="explanation">收費明細：請選擇服務</p>
+    <div class="result-container">
+      <p id="result">總計: $0</p>
+      <p id="explanation">收費明細：請選擇服務</p>
+    </div>
   </div>
 
   <div class="section-title">記錄</div>
@@ -127,37 +147,37 @@
   </table>
 
   <script>
-    // 初始化記錄
+    // 初始化記錄（從 localStorage 或 Google Sheets 載入）
     let records = JSON.parse(localStorage.getItem('nailRecords')) || [];
     renderRecords();
 
     function calculate() {
       let total = 0;
-      let explanation = "收費明細：";
+      let explanation = "收費明細：<br>";
       let addOnFees = [];
       let servicesSelected = false;
 
       // 主要服務
       if (document.getElementById("nail").checked) {
         total += 100;
-        explanation += "美甲 $100";
+        explanation += '<span class="detail-item">美甲 $100</span><br>';
         servicesSelected = true;
       }
       if (document.getElementById("manicure").checked) {
         total += 80;
-        explanation += (servicesSelected ? ", " : "") + "修甲 $80";
+        explanation += '<span class="detail-item">修甲 $80</span><br>';
         servicesSelected = true;
       }
       if (document.getElementById("eyelash").checked) {
         total += 120;
-        explanation += (servicesSelected ? ", " : "") + "美眼睫毛 $120";
+        explanation += '<span class="detail-item">美眼睫毛 $120</span><br>';
         servicesSelected = true;
       }
 
       // 如果沒有選擇主要服務
       if (!servicesSelected) {
         document.getElementById("result").innerText = "總計: $0";
-        document.getElementById("explanation").innerText = "收費明細：請選擇至少一項主要服務";
+        document.getElementById("explanation").innerHTML = "收費明細：請選擇至少一項主要服務";
         return;
       }
 
@@ -179,34 +199,35 @@
         let maxFee = Math.max(...addOnFees.map(item => item.fee));
         let maxFeeItem = addOnFees.find(item => item.fee === maxFee);
         total += maxFee;
-        explanation += ", " + maxFeeItem.name + " $" + maxFee + " (疊加優惠：僅收最貴附加服務)";
+        explanation += `<span class="detail-item">${maxFeeItem.name} $${maxFee}</span><br>`;
+        explanation += `<span class="note">(疊加優惠：僅收最貴附加服務)</span><br>`;
       } else {
         // 無疊加優惠，全部附加服務費用相加
         addOnFees.forEach(item => {
           total += item.fee;
-          explanation += ", " + item.name + " $" + item.fee;
+          explanation += `<span class="detail-item">${item.name} $${item.fee}</span><br>`;
         });
       }
 
       // 首次優惠
       if (document.getElementById("firstTime").checked) {
         total -= 10;
-        explanation += ", 首次優惠 -$10";
+        explanation += '<span class="detail-item">首次優惠 -$10</span><br>';
       }
 
       // 確保總價不為負
       total = Math.max(0, total);
 
       // 更新顯示
-      document.getElementById("result").innerText = "總計: $" + total;
-      document.getElementById("explanation").innerText = explanation;
+      document.getElementById("result").innerText = `總計: $${total}`;
+      document.getElementById("explanation").innerHTML = explanation;
 
       // 儲存當前計算結果以便加入記錄
       window.currentResult = { total, explanation };
     }
 
     function addRecord() {
-      if (!window.currentResult || !window.currentResult.explanation.includes("美甲") && !window.currentResult.explanation.includes("修甲") && !window.currentResult.explanation.includes("美眼睫毛")) {
+      if (!window.currentResult || !window.currentResult.explanation.includes("detail-item")) {
         alert("請先計算費用並選擇至少一項主要服務！");
         return;
       }
@@ -215,17 +236,58 @@
       const now = new Date();
       const dateStr = now.toLocaleDateString('zh-HK', { year: 'numeric', month: '2-digit', day: '2-digit' });
 
-      // 添加記錄
-      records.push({
+      // 準備記錄數據
+      const record = {
         date: dateStr,
-        explanation: window.currentResult.explanation + `, 總計: $${window.currentResult.total}`
-      });
+        explanation: window.currentResult.explanation.replace(/<br>/g, '\n').replace(/<\/?span[^>]*>/g, '')
+      };
 
-      // 儲存到 localStorage
+      // 提交到 Google Forms
+      submitToGoogleForm(record);
+
+      // 本地記錄（臨時，待 Google Sheets 同步）
+      records.push(record);
       localStorage.setItem('nailRecords', JSON.stringify(records));
-
-      // 重新渲染表格
       renderRecords();
+
+      // 從 Google Sheets 重新載入記錄
+      loadRecordsFromGoogleSheets();
+    }
+
+    function submitToGoogleForm(record) {
+      const formUrl = "你的 Google Forms 預填寫 URL"; // 需替換為實際 URL
+      const formData = new FormData();
+      formData.append("entry.你的日期欄位ID", record.date); // 替換為 Google Forms 的日期欄位 ID
+      formData.append("entry.你的明細欄位ID", record.explanation); // 替換為 Google Forms 的明細欄位 ID
+
+      fetch(formUrl, {
+        method: "POST",
+        body: formData,
+        mode: "no-cors" // Google Forms 不需要跨域回應
+      }).then(() => {
+        console.log("記錄已提交到 Google Forms");
+      }).catch(error => {
+        console.error("提交失敗:", error);
+        alert("提交到 Google Forms 失敗，請檢查表單設置");
+      });
+    }
+
+    function loadRecordsFromGoogleSheets() {
+      const sheetUrl = "你的 Google Sheets JSON 端點"; // 需替換為實際 URL
+      fetch(sheetUrl)
+        .then(response => response.json())
+        .then(data => {
+          records = data.values.slice(1).map(row => ({
+            date: row[0], // 第一列為日期
+            explanation: row[1] // 第二列為收費明細
+          }));
+          localStorage.setItem('nailRecords', JSON.stringify(records));
+          renderRecords();
+        })
+        .catch(error => {
+          console.error("載入 Google Sheets 失敗:", error);
+          alert("無法載入記錄，請檢查 Google Sheets 設置");
+        });
     }
 
     function renderRecords() {
@@ -236,7 +298,7 @@
         const row = document.createElement("tr");
         row.innerHTML = `
           <td>${record.date}</td>
-          <td>${record.explanation}</td>
+          <td class="record-detail">${record.explanation.replace(/\n/g, '<br>')}</td>
           <td><button class="delete-btn" onclick="deleteRecord(${index})">刪除</button></td>
         `;
         tbody.appendChild(row);
@@ -246,12 +308,33 @@
     function deleteRecord(index) {
       if (confirm("確定要刪除這條記錄嗎？")) {
         if (confirm("請再次確認，刪除後無法恢復！")) {
+          // 從 Google Sheets 刪除（透過 Google Apps Script）
+          deleteFromGoogleSheets(index);
+          
+          // 本地刪除
           records.splice(index, 1);
           localStorage.setItem('nailRecords', JSON.stringify(records));
           renderRecords();
         }
       }
     }
+
+    function deleteFromGoogleSheets(index) {
+      const scriptUrl = "你的 Google Apps Script 刪除端點"; // 需替換為實際 URL
+      fetch(scriptUrl, {
+        method: "POST",
+        body: JSON.stringify({ row: index + 2 }), // Google Sheets 行數從 2 開始（跳過標題）
+        headers: { "Content-Type": "application/json" }
+      }).then(() => {
+        console.log("從 Google Sheets 刪除成功");
+      }).catch(error => {
+        console.error("刪除失敗:", error);
+        alert("從 Google Sheets 刪除失敗，請檢查 Apps Script 設置");
+      });
+    }
+
+    // 頁面載入時從 Google Sheets 載入記錄
+    window.onload = loadRecordsFromGoogleSheets;
   </script>
 </body>
 </html>
