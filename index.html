@@ -255,11 +255,11 @@
                     buttonsDiv.innerHTML += `<button class="nav-btn" onclick="navigate('${flow[currentIndex - 1]}')">上一頁</button>`;
                 }
                 if (currentIndex < flow.length - 1) {
-                    buttonsDiv.innerHTML += `< deleted code for brevity>`;
+                    buttonsDiv.innerHTML += `<button class="nav-btn" onclick="navigate('${flow[currentIndex + 1]}')">下一頁</button>`;
                 }
                 buttonsDiv.innerHTML += `<button class="nav-btn" onclick="navigate('home')">回首頁</button>`;
             }
-            renderOrder();
+            renderOrder(); // 每次渲染頁面時確保訂單詳情更新
         }
 
         function navigate(page) {
@@ -286,6 +286,9 @@
 
         function updateQuantity(index, delta) {
             currentOrder[index].quantity = Math.max(0, currentOrder[index].quantity + delta);
+            if (currentOrder[index].quantity === 0) {
+                currentOrder.splice(index, 1); // 數量為 0 時移除項目
+            }
             updateTotal();
             renderOrder();
         }
@@ -298,7 +301,7 @@
 
         function updateTotal() {
             currentTotal = currentOrder.reduce((sum, item) => sum + item.price * item.quantity, 0);
-            document.getElementById('total-amount').textContent =現在の総額;
+            document.getElementById('total-amount').textContent = currentTotal;
         }
 
         function renderOrder() {
