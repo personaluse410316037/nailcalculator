@@ -210,6 +210,9 @@
                     return service.name.includes('Soft Gel') ? 50 : (service.name.includes('Hard Gel') && service.name.includes('手') ? 30 : 0);
                 }, nextStep: 'style' }
             ],
+            style: [
+                { name: '選擇款式', price: 0, nextStep: 'extend' } // 臨時占位，觸發款式頁
+            ],
             extend: [
                 { name: '不要延長指甲', price: 0 },
                 { name: '要延長指甲', price: 10, quantity: true }
@@ -287,11 +290,13 @@
                             currentStep++;
                             const nextStep = option.nextStep;
                             if (nextStep) {
-                                if (category === 'gelHand' && nextStep === 'extend') {
+                                if (nextStep === 'style') {
                                     showGelStep(category, nextStep);
-                                } else if (category === 'gelFoot' && nextStep === 'extend') {
+                                } else if (category === 'gelHand' && nextStep === 'extend') {
                                     showGelStep(category, nextStep);
                                 } else if (category === 'gelFoot' && nextStep === 'soak') {
+                                    showGelStep(category, nextStep);
+                                } else if (category === 'gelFoot' && nextStep === 'extend') {
                                     showGelStep(category, nextStep);
                                 } else {
                                     goHome();
