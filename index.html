@@ -200,6 +200,7 @@
                 { name: '浸腳', price: 100 }
             ],
             '眼睫毛': [
+                { name: '修眉', price: 80 }
                 { name: '自然款', price: 368 },
                 { name: '濃密款', price: 468 },
                 { name: '尊貴款', price: 568 },
@@ -207,29 +208,22 @@
                 { name: '補眼睫毛', price: 298 },
                 { name: '純卸', price: 150 }
             ],
-            '其他小項': {
-                '卸': [
+            '卸修補': [
                     { name: '手部卸甲', price: 80 },
                     { name: '腳部卸甲', price: 100 }
-                ],
-                '修': [
-                    { name: '修手（無 Gel，純浸水）', price: 80 },
-                    { name: '修腳（無 Gel，純浸水）', price: 198 },
-                    { name: '修眉', price: 80 }
-                ],
-                '補': [
+                    { name: '修手', price: 80 },
+                    { name: '修腳', price: 120 },
+                    { name: '修腳全套', price: 198 },
                     { name: '7 日內免費補', price: 0 },
                     { name: '超過 7 日 $30/隻', price: 30 },
                     { name: '非本店 $50/隻', price: 50 }
-                ]
-            }
-        };
+            ],
 
         const pageFlow = {
             'Gel 手': ['Gel 手', '款式', '延長/畫花/貼石', 'home'],
             'Gel 腳': ['Gel 腳', '款式', '延長/畫花/貼石/浸腳', 'home'],
             '眼睫毛': ['眼睫毛', 'home'],
-            '其他小項': ['其他小項', 'home']
+            '卸修補': ['卸修補', 'home']
         };
 
         function renderPage() {
@@ -243,7 +237,7 @@
                     <button class="service-btn" onclick="navigate('Gel 手')">Gel 手</button>
                     <button class="service-btn" onclick="navigate('Gel 腳')">Gel 腳</button>
                     <button class="service-btn" onclick="navigate('眼睫毛')">眼睫毛</button>
-                    <button class="service-btn" onclick="navigate('其他小項')">其他小項</button>
+                    <button class="service-btn" onclick="navigate('卸修補')">卸修補</button>
                     <button class="confirm-btn" onclick="confirmOrder()">確認訂單</button>
                     <button class="clear-btn" onclick="clearOrder()">清空訂單</button>
                     <button class="history-btn" onclick="showHistory()">查看歷史記錄</button>
@@ -251,7 +245,7 @@
             } else if (currentPage === 'history') {
                 renderHistory();
                 buttonsDiv.innerHTML = `<button class="nav-btn" onclick="navigate('home')">回首頁</button>`;
-            } else if (currentPage === '其他小項') {
+            } else if (currentPage === '卸修補') {
                 buttonsDiv.innerHTML = `
                     <button class="service-btn" onclick="navigate('卸')">卸</button>
                     <button class="service-btn" onclick="navigate('修')">修</button>
@@ -259,7 +253,7 @@
                     <button class="nav-btn" onclick="navigate('home')">回首頁</button>
                 `;
             } else {
-                const items = services[currentPage] || services['其他小項'][currentPage];
+                const items = services[currentPage] || services['卸修補'][currentPage];
                 items.forEach(item => {
                     let price = item.price;
                     if (currentPage === '卸甲' && item.name === '要卸甲') {
