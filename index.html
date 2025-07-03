@@ -169,34 +169,34 @@
 
         const services = {
             'Gel 手': [
-                { name: 'Soft Gel (手)', price: 150 },
-                { name: 'Hard Gel (手)', price: 188 }
+                { name: 'Soft(手)', price: 150 },
+                { name: 'Soft(手)+卸甲', price: 200 },
+                { name: 'Hard(手)', price: 188 },
+                { name: 'Hard(手)+卸甲', price: 218 }
             ],
             'Gel 腳': [
-                { name: 'Soft Gel (腳)', price: 188 },
-                { name: 'Hard Gel (腳)', price: 258 }
-            ],
-            '卸甲': [
-                { name: '不要卸甲', price: 0 },
-                { name: '要卸甲', price: null }
+                { name: 'Soft(腳)', price: 188 },
+                { name: 'Soft(腳)+卸甲', price: 238 },
+                { name: 'Hard(腳)', price: 258 }
             ],
             '款式': [
-                { name: '法式', price: 50 },
+                { name: '普通色板', price: 0 },
                 { name: '牆上/新色版/閃粉', price: 50 },
                 { name: '貓眼', price: 80 },
-                { name: '跳色（多一隻色）', price: 30 },
+                { name: '跳色/底色', price: 30 },
+                { name: '法式', price: 50 },
                 { name: '捽粉', price: 100 },
-                { name: '有底色捽粉', price: 130 },
                 { name: '單色漸變', price: 80 },
-                { name: '雙色漸變', price: 80 },
-                { name: '普通色板', price: 0 },
+            ],
+            '延長/畫花/貼石': [
+                { name: '延長指甲 (每隻)', price: 10 }
                 { name: '簡單畫花/貼紙', price: 10 },
                 { name: '貼石（細粒）', price: 3 }
             ],
-            '延長指甲': [
+            '延長/畫花/貼石/浸腳': [
                 { name: '延長指甲 (每隻)', price: 10 }
-            ],
-            '浸腳': [
+                { name: '簡單畫花/貼紙', price: 10 },
+                { name: '貼石（細粒）', price: 3 }
                 { name: '浸腳', price: 100 }
             ],
             '眼睫毛': [
@@ -226,8 +226,8 @@
         };
 
         const pageFlow = {
-            'Gel 手': ['Gel 手', '卸甲', '款式', '延長指甲', 'home'],
-            'Gel 腳': ['Gel 腳', '卸甲', '款式', '浸腳', '延長指甲', 'home'],
+            'Gel 手': ['Gel 手', '款式', '延長/畫花/貼石', 'home'],
+            'Gel 腳': ['Gel 腳', '款式', '延長/畫花/貼石/浸腳', 'home'],
             '眼睫毛': ['眼睫毛', 'home'],
             '其他小項': ['其他小項', 'home']
         };
