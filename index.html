@@ -1,385 +1,158 @@
-<!DOCTYPE html>
-<html lang="zh-TW">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>美甲店 POS 系統</title>
-    <style>
-        body {
-            background-color: #f8f0f5;
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-        }
-        .container {
-            max-width: 600px;
-            width: 100%;
-            text-align: center;
-        }
-        .order-details {
-            margin-bottom: 20px;
-            border: 1px solid #ccc;
-            padding: 10px;
-            background-color: #fff;
-            border-radius: 10px;
-        }
-        .order-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin: 5px 0;
-        }
-        .order-item button {
-            font-size: 12px;
-            padding: 2px 6px;
-            margin-left: 5px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            height: auto;
-            width: auto;
-        }
-        .delete-btn {
-            background-color: #f44336;
-            color: white;
-        }
-        .delete-btn:hover {
-            background-color: #d32f2f;
-        }
-        .quantity-btn {
-            background-color: #9E9E9E;
-            color: white;
-        }
-        .quantity-btn:hover {
-            background-color: #757575;
-        }
-        .total {
-            font-size: 1.2em;
-            font-weight: bold;
-            margin-top: 10px;
-        }
-        .buttons {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        button {
-            width: 100px;
-            height: 100px;
-            font-size: 16px;
-            font-weight: bold;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            color: #333;
-        }
-        .service-btn {
-            background-color: #ff8a80;
-        }
-        .service-btn:hover {
-            background-color: #f06292;
-        }
-        .nav-btn {
-            background-color: #2196F3;
-            color: white;
-        }
-        .nav-btn:hover {
-            background-color: #1976D2;
-        }
-        .next-btn {
-            background-color: #9C27B0; /* 下一頁使用紫色 */
-            color: white;
-        }
-        .next-btn:hover {
-            background-color: #7B1FA2;
-        }
-        .clear-btn {
-            background-color: #f44336;
-            color: white;
-        }
-        .clear-btn:hover {
-            background-color: #d32f2f;
-        }
-        .confirm-btn {
-            background-color: #4CAF50;
-            color: white;
-        }
-        .confirm-btn:hover {
-            background-color: #388E3C;
-        }
-        .history-btn {
-            background-color: #ff9800;
-            color: white;
-        }
-        .history-btn:hover {
-            background-color: #f57c00;
-        }
-        .history-section {
-            margin-top: 20px;
-            text-align: left;
-        }
-        .history-item {
-            border: 1px solid #ccc;
-            padding: 10px;
-            margin-bottom: 10px;
-            border-radius: 5px;
-            background-color: #fff;
-        }
-        .history-item button {
-            font-size: 15px; /* 歷史記錄刪除按鈕大小調整為 15px */
-            padding: 2px 6px;
-            margin-left: 5px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            height: auto;
-            width: auto;
-        }
-        @media (max-width: 600px) {
-            button {
-                width: 80px;
-                height: 80px;
-                font-size: 14px;
-            }
-            .buttons {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="order-details">
-            <h2>訂單詳情</h2>
-            <div id="order-items"></div>
-            <div class="total">總金額: $<span id="total-amount">0</span></div>
-        </div>
-        <div id="buttons" class="buttons"></div>
-        <div id="history" class="history-section" style="display: none;"></div>
-    </div>
-    <script>
-        let currentPage = 'home';
-        let currentOrder = [];
-        let currentTotal = 0;
-        let currentGelType = null;
-        let currentService = null;
+# Lo2cin4bt/main.py
+"""
+開發注意事項:
+1. 保持 main.py 簡潔，僅負責流程協調。
+2. 確保與 dataloader、statanalyser 和 backtester 的接口兼容。
+3. 提供清晰的用戶交互，允許跳過統計分析或回測。
+"""
 
-        const services = {
-            'Gel 手': [
-                { name: 'Soft(手)', price: 150 },
-                { name: 'Soft(手)+卸甲', price: 200 },
-                { name: 'Hard(手)', price: 188 },
-                { name: 'Hard(手)+卸甲', price: 218 }
-            ],
-            'Gel 腳': [
-                { name: 'Soft(腳)', price: 188 },
-                { name: 'Soft(腳)+卸甲', price: 238 },
-                { name: 'Hard(腳)', price: 258 }
-            ],
-            '款式': [
-                { name: '普通色板', price: 0 },
-                { name: '牆上/新色版/閃粉', price: 50 },
-                { name: '貓眼', price: 80 },
-                { name: '跳色/底色', price: 30 },
-                { name: '法式', price: 50 },
-                { name: '捽粉', price: 100 },
-                { name: '單色漸變', price: 80 },
-            ],
-            '延長/畫花/貼石': [
-                { name: '延長指甲 (每隻)', price: 10 }
-                { name: '簡單畫花/貼紙', price: 10 },
-                { name: '貼石（細粒）', price: 3 }
-            ],
-            '延長/畫花/貼石/浸腳': [
-                { name: '延長指甲 (每隻)', price: 10 }
-                { name: '簡單畫花/貼紙', price: 10 },
-                { name: '貼石（細粒）', price: 3 }
-                { name: '浸腳', price: 100 }
-            ],
-            '眼睫毛': [
-                { name: '修眉', price: 80 }
-                { name: '自然款', price: 368 },
-                { name: '濃密款', price: 468 },
-                { name: '尊貴款', price: 568 },
-                { name: '套票', price: 0 },
-                { name: '補眼睫毛', price: 298 },
-                { name: '純卸', price: 150 }
-            ],
-            '卸修補': [
-                    { name: '手部卸甲', price: 80 },
-                    { name: '腳部卸甲', price: 100 }
-                    { name: '修手', price: 80 },
-                    { name: '修腳', price: 120 },
-                    { name: '修腳全套', price: 198 },
-                    { name: '7 日內免費補', price: 0 },
-                    { name: '超過 7 日 $30/隻', price: 30 },
-                    { name: '非本店 $50/隻', price: 50 }
-            ],
+# 先清理所有 logger 上的 RotatingFileHandler（或 FileHandler）
+import logging
+import logging.handlers
+for name in logging.root.manager.loggerDict:
+    logger = logging.getLogger(name)
+    for h in list(logger.handlers):
+        if isinstance(h, (logging.handlers.RotatingFileHandler, logging.FileHandler)):
+            logger.removeHandler(h)
 
-        const pageFlow = {
-            'Gel 手': ['Gel 手', '款式', '延長/畫花/貼石', 'home'],
-            'Gel 腳': ['Gel 腳', '款式', '延長/畫花/貼石/浸腳', 'home'],
-            '眼睫毛': ['眼睫毛', 'home'],
-            '卸修補': ['卸修補', 'home']
-        };
+import pandas as pd
+from dataloader import DataLoader
+from statanalyser import (
+    BaseStatAnalyser, CorrelationTest, StationarityTest,
+    AutocorrelationTest, DistributionTest, SeasonalAnalysis, ReportGenerator
+)
+from backtester import DataImporter_backtester, Base_backtester
+import openpyxl
+import multiprocessing
+import os
+import numpy as np
 
-        function renderPage() {
-            const buttonsDiv = document.getElementById('buttons');
-            const historyDiv = document.getElementById('history');
-            buttonsDiv.innerHTML = '';
-            historyDiv.style.display = currentPage === 'history' ? 'block' : 'none';
+pd.set_option('display.max_columns', None)
+pd.set_option('display.width', 1000)
+pd.set_option('display.max_colwidth', 20)
 
-            if (currentPage === 'home') {
-                buttonsDiv.innerHTML = `
-                    <button class="service-btn" onclick="navigate('Gel 手')">Gel 手</button>
-                    <button class="service-btn" onclick="navigate('Gel 腳')">Gel 腳</button>
-                    <button class="service-btn" onclick="navigate('眼睫毛')">眼睫毛</button>
-                    <button class="service-btn" onclick="navigate('卸修補')">卸修補</button>
-                    <button class="confirm-btn" onclick="confirmOrder()">確認訂單</button>
-                    <button class="clear-btn" onclick="clearOrder()">清空訂單</button>
-                    <button class="history-btn" onclick="showHistory()">查看歷史記錄</button>
-                `;
-            } else if (currentPage === 'history') {
-                renderHistory();
-                buttonsDiv.innerHTML = `<button class="nav-btn" onclick="navigate('home')">回首頁</button>`;
-            } else if (currentPage === '卸修補') {
-                buttonsDiv.innerHTML = `
-                    <button class="service-btn" onclick="navigate('卸')">卸</button>
-                    <button class="service-btn" onclick="navigate('修')">修</button>
-                    <button class="service-btn" onclick="navigate('補')">補</button>
-                    <button class="nav-btn" onclick="navigate('home')">回首頁</button>
-                `;
-            } else {
-                const items = services[currentPage] || services['卸修補'][currentPage];
-                items.forEach(item => {
-                    let price = item.price;
-                    if (currentPage === '卸甲' && item.name === '要卸甲') {
-                        price = (currentGelType.includes('Soft Gel') ? 50 : 30);
-                    }
-                    buttonsDiv.innerHTML += `
-                        <button class="service-btn" onclick="addToOrder('${item.name}', ${price})">${item.name}<br>$${price}</button>
-                    `;
-                });
-                const flow = pageFlow[currentService] || ['home'];
-                const currentIndex = flow.indexOf(currentPage);
-                if (currentIndex > 0) {
-                    buttonsDiv.innerHTML += `<button class="nav-btn" onclick="navigate('${flow[currentIndex - 1]}')">上一頁</button>`;
-                }
-                if (currentIndex < flow.length - 1) {
-                    buttonsDiv.innerHTML += `<button class="next-btn" onclick="navigate('${flow[currentIndex + 1]}')">下一頁</button>`;
-                }
-                buttonsDiv.innerHTML += `<button class="nav-btn" onclick="navigate('home')">回首頁</button>`;
-            }
-            renderOrder();
-        }
+# 設定多進程安全的 logging
+listener = None
 
-        function navigate(page) {
-            if (page === 'Gel 手' || page === 'Gel 腳') {
-                currentService = page;
-            }
-            currentPage = page;
-            renderPage();
-        }
+def setup_logging():
+    global listener
+    log_dir = os.path.join(os.path.dirname(__file__), "logs")
+    os.makedirs(log_dir, exist_ok=True)
+    log_file = os.path.join(log_dir, "backtest_errors.log")
 
-        function addToOrder(name, price) {
-            if (currentPage === 'Gel 手' || currentPage === 'Gel 腳') {
-                currentGelType = name;
-            }
-            const existingItem = currentOrder.find(item => item.name === name);
-            if (existingItem) {
-                existingItem.quantity++;
-            } else {
-                currentOrder.push({ name, price, quantity: 1 });
-            }
-            updateTotal();
-            renderOrder();
-        }
+    log_queue = multiprocessing.Queue(-1)
+    # 改用 FileHandler，不做輪替
+    handler = logging.FileHandler(log_file, encoding='utf-8')
+    formatter = logging.Formatter("[%(asctime)s] [%(levelname)s] [BacktestID: %(backtest_id)s] [%(name)s]: %(message)s")
+    handler.setFormatter(formatter)
+    listener = logging.handlers.QueueListener(log_queue, handler)
+    listener.start()
 
-        function updateQuantity(index, delta) {
-            currentOrder[index].quantity = Math.max(0, currentOrder[index].quantity + delta);
-            if (currentOrder[index].quantity === 0) {
-                currentOrder.splice(index, 1);
-            }
-            updateTotal();
-            renderOrder();
-        }
+    root_logger = logging.getLogger("lo2cin4bt")
+    root_logger.setLevel(logging.DEBUG)
+    root_logger.handlers = []
+    root_logger.addHandler(logging.handlers.QueueHandler(log_queue))
+    return listener
 
-        function deleteItem(index) {
-            currentOrder.splice(index, 1);
-            updateTotal();
-            renderOrder();
-        }
+def standardize_data_for_stats(data):
+    """將數據標準化為統計分析器期望的格式"""
+    df = data.copy()
+    
+    # 將欄位名稱轉換為小寫
+    df.columns = [col.lower() for col in df.columns]
+    
+    # 確保 time 欄位存在且格式正確
+    if 'time' not in df.columns:
+        if 'Time' in data.columns:
+            df['time'] = data['Time']
+        else:
+            raise ValueError("數據中缺少 time 欄位")
+    
+    # 確保 time 欄位為 datetime 格式
+    df['time'] = pd.to_datetime(df['time'])
+    
+    # 如果沒有收益率欄位，需要計算
+    if 'close_return' not in df.columns:
+        if 'close' in df.columns:
+            # 計算收益率
+            df['close_return'] = df['close'].pct_change()
+            df['close_logreturn'] = np.log(df['close'] / df['close'].shift(1))
+            df['open_return'] = df['open'].pct_change()
+            df['open_logreturn'] = np.log(df['open'] / df['open'].shift(1))
+            # 處理無限值和 NaN
+            for col in ['close_return', 'close_logreturn', 'open_return', 'open_logreturn']:
+                df[col] = df[col].replace([np.inf, -np.inf], np.nan).fillna(0)
+            print("已計算收益率欄位")
+        else:
+            print("警告：缺少 close 欄位，無法計算收益率")
+    
+    return df
 
-        function updateTotal() {
-            currentTotal = currentOrder.reduce((sum, item) => sum + item.price * item.quantity, 0);
-            document.getElementById('total-amount').textContent = currentTotal;
-        }
+def main():
+    setup_logging()
+    print("啟動量化回測框架")
 
-        function renderOrder() {
-            const orderItems = document.getElementById('order-items');
-            orderItems.innerHTML = currentOrder.map((item, index) => `
-                <div class="order-item">
-                    <span>${item.name} ($${item.price}) x ${item.quantity}</span>
-                    <div>
-                        <button class="quantity-btn" onclick="updateQuantity(${index}, 1)">+</button>
-                        <button class="quantity-btn" onclick="updateQuantity(${index}, -1)">-</button>
-                        <button class="delete-btn" onclick="deleteItem(${index})">刪</button>
-                    </div>
-                </div>
-            `).join('');
-            updateTotal();
-        }
+    # 載入數據
+    importer = DataImporter_backtester()
+    data, frequency = importer.load_and_standardize_data()
+    if data is None:
+        print("數據載入失敗，程式終止")
+        return
+    print("數據載入成功，概覽：")
+    print(data.head())
+    print("數據列名：", list(data.columns))
 
-        function clearOrder() {
-            currentOrder = [];
-            currentTotal = 0;
-            renderOrder();
-        }
+    # 詢問是否運行統計分析
+    run_stats = input("\n是否運行統計分析？(y/n)：").strip().lower()
+    if run_stats == 'y':
+        # 標準化數據格式以符合統計分析器要求
+        stats_data = standardize_data_for_stats(data)
+        
+        # 獲取用戶配置
+        predictor_col, updated_data = BaseStatAnalyser.get_user_config(stats_data)
 
-        function confirmOrder() {
-            if (currentOrder.length === 0) return;
-            const orderHistory = JSON.parse(localStorage.getItem('orderHistory') || '[]');
-            orderHistory.push({
-                date: new Date().toLocaleString('zh-TW'),
-                items: [...currentOrder],
-                total: currentTotal
-            });
-            localStorage.setItem('orderHistory', JSON.stringify(orderHistory));
-            clearOrder();
-            alert('訂單已確認！');
-        }
+        # 選擇頻率
+        freq = input("\n請輸入數據頻率以計算自相關性（D=日，H=小時，T=分鐘）：").strip().upper()
+        freq = freq if freq in ['D', 'H', 'T'] else 'D'
+        print(f"使用頻率：{freq}")
 
-        function showHistory() {
-            currentPage = 'history';
-            renderPage();
-        }
+        # 初始化分析器
+        analyzers = [
+            CorrelationTest(updated_data, predictor_col, "close_return"),
+            StationarityTest(updated_data, predictor_col, "close_return"),
+            AutocorrelationTest(updated_data, predictor_col, "close_return", freq=freq),
+            DistributionTest(updated_data, predictor_col, "close_return"),
+            SeasonalAnalysis(updated_data, predictor_col, "close_return"),
+        ]
 
-        function renderHistory() {
-            const historyDiv = document.getElementById('history');
-            const orderHistory = JSON.parse(localStorage.getItem('orderHistory') || '[]');
-            historyDiv.innerHTML = orderHistory.map((order, index) => `
-                <div class="history-item">
-                    <p><strong>日期:</strong> ${order.date}</p>
-                    <p><strong>訂單內容:</strong></p>
-                    ${order.items.map(item => `<p>${item.name} ($${item.price}) x ${item.quantity}</p>`).join('')}
-                    <p><strong>總金額:</strong> $${order.total}</p>
-                    <button class="delete-btn" onclick="deleteHistory(${index})">刪除記錄</button>
-                </div>
-            `).join('');
-        }
+        # 執行分析
+        results = {}
+        for analyzer in analyzers:
+            test_name = f"{analyzer.__class__.__name__}_{analyzer.predictor_col}"
+            try:
+                results[test_name] = analyzer.analyze()
+                print(f"\n=== {test_name} 結果已在終端展示 ===")
+            except Exception as e:
+                print(f"Error in {test_name}: {e}")
+                results[test_name] = {"error": str(e)}
 
-        function deleteHistory(index) {
-            const orderHistory = JSON.parse(localStorage.getItem('orderHistory') || '[]');
-            orderHistory.splice(index, 1);
-            localStorage.setItem('orderHistory', JSON.stringify(orderHistory));
-            renderHistory();
-        }
+        # 保存報告
+        reporter = ReportGenerator()
+        reporter.save_report(results)
+        reporter.save_data(updated_data, format="csv")
 
-        // 初始化
-        renderPage();
-    </script>
-</body>
-</html>
+    # 詢問是否運行回測
+    run_backtest = input("\n是否運行回測？(y/n)：").strip().lower()
+    if run_backtest == 'y':
+        backtester = Base_backtester(data, frequency)
+        backtester.run_backtest()
+    else:
+        print("跳過回測，程式結束。")
+
+    # 程式結束時停止 listener
+    global listener
+    if listener:
+        listener.stop()
+
+if __name__ == "__main__":
+    main()
