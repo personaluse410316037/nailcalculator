@@ -66,6 +66,23 @@
             gap: 10px;
             margin-bottom: 20px;
         }
+        .service-input {
+            margin: 10px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .service-input label {
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        .service-input input {
+            width: 80px;
+            padding: 5px;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
         button {
             width: 100px;
             height: 100px;
@@ -77,11 +94,11 @@
             color: #333;
         }
         .service-btn {
-            background-color: #42A5F5; /* 改進為淺藍色 */
-            color: #333; /* 保持文字可見性 */
+            background-color: #42A5F5;
+            color: #333;
         }
         .service-btn:hover {
-            background-color: #1976D2; /* 懸停時加深藍色 */
+            background-color: #1976D2;
         }
         .nav-btn {
             background-color: #2196F3;
@@ -91,7 +108,7 @@
             background-color: #1976D2;
         }
         .next-btn {
-            background-color: #9C27B0; /* 紫色下一頁 */
+            background-color: #9C27B0;
             color: white;
         }
         .next-btn:hover {
@@ -140,14 +157,14 @@
             width: auto;
         }
         .prev-btn {
-            background-color: #FFB300; /* 橙黃色 */
+            background-color: #FFB300;
             color: #fff;
         }
         .prev-btn:hover {
-            background-color: #26A69A;/* 青綠色 */
+            background-color: #26A69A;
         }
         .home-btn {
-            background-color: #26A69A; /* 青綠色 */
+            background-color: #26A69A;
             color: #fff;
         }
         .home-btn:hover {
@@ -162,6 +179,9 @@
             .buttons {
                 grid-template-columns: repeat(2, 1fr);
             }
+            .service-input input {
+                width: 60px;
+            }
         }
     </style>
 </head>
@@ -171,6 +191,10 @@
             <h2>訂單詳情</h2>
             <div id="order-items"></div>
             <div class="total">總金額: $<span id="total-amount">0</span></div>
+        </div>
+        <div id="service-input" class="service-input" style="display: none;">
+            <label for="service-price">服務金額:</label>
+            <input type="number" id="service-price" min="0" value="0">
         </div>
         <div id="buttons" class="buttons"></div>
         <div id="history" class="history-section" style="display: none;"></div>
@@ -253,8 +277,10 @@
         function renderPage() {
             const buttonsDiv = document.getElementById('buttons');
             const historyDiv = document.getElementById('history');
+            const serviceInputDiv = document.getElementById('service-input');
             buttonsDiv.innerHTML = '';
             historyDiv.style.display = currentPage === 'history' ? 'block' : 'none';
+            serviceInputDiv.style.display = (currentPage === 'Gel 手' || currentPage === 'Gel 腳') ? 'flex' : 'none';
 
             if (currentPage === 'home') {
                 buttonsDiv.innerHTML = `
@@ -282,6 +308,11 @@
                         <button class="service-btn" onclick="addToOrder('${item.name}', ${price})">${item.name}<br>$${price}</button>
                     `;
                 });
+                if (currentPage === 'Gel 手' || currentPage === 'Gel 腳') {
+                    buttonsDiv.innerHTML += `
+                        <button class="service-btn" onclick="addService()">服務</button>
+                    `;
+                }
                 const flow = pageFlow[currentService] || ['home'];
                 const currentIndex = flow.indexOf(currentPage);
                 if (currentIndex > 0) {
@@ -317,6 +348,25 @@
             renderOrder();
         }
 
+        function addService() {
+            const servicePriceInput = document.getElementById('service-price');
+            const price = parseInt(servicePriceInput.value) || 0;
+            if (price <= 0) {
+                alert('請輸入有效的服務金額！');
+                return;
+            }
+            const serviceName = currentPage === 'Gel 手' ? '[手]服務' : '[腳]服務';
+            const existingItem = currentOrder.find(item => item.name === serviceName);
+            if (existingItem) {
+                existingItem.quantity++;
+                existingItem.price = price; // 更新價格
+            } else {
+                currentOrder.push({ name: serviceName, price: price, quantity: 1 });
+            }
+            updateTotal();
+            renderOrder();
+        }
+
         function updateQuantity(index, delta) {
             currentOrder[index].quantity = Math.max(0, currentOrder[index].quantity + delta);
             if (currentOrder[index].quantity === 0) {
@@ -339,33 +389,28 @@
 
         function renderOrder() {
             const orderItems = document.getElementById('order-items');
-            // 分類規則
             const groupMap = {
                 'Gel 手': ['[手]'],
                 'Gel 腳': ['[腳]'],
                 '眼睫毛': ['[睫]'],
                 '卸修補': ['手部卸甲', '腳部卸甲', '修手', '修腳', '7 日內免費補甲', '超過 7 日補甲 $30/隻', '非本店補甲 $50/隻']
             };
-            // 初始化分組
             const grouped = {
                 'Gel 手': [],
                 'Gel 腳': [],
                 '眼睫毛': [],
                 '卸修補': []
             };
-            // 分類
             currentOrder.forEach((item, index) => {
                 let found = false;
                 for (const group in groupMap) {
                     if (Array.isArray(groupMap[group][0]) || group === '卸修補') {
-                        // 卸修補用名稱完全比對
                         if (group === '卸修補' && groupMap[group].some(key => item.name.startsWith(key) || item.name === key)) {
                             grouped[group].push({ ...item, index });
                             found = true;
                             break;
                         }
                     }
-                    // 其他用前綴
                     if (group !== '卸修補' && groupMap[group].some(prefix => item.name.startsWith(prefix))) {
                         grouped[group].push({ ...item, index });
                         found = true;
@@ -373,11 +418,9 @@
                     }
                 }
                 if (!found) {
-                    // 其他未分類也歸到卸修補
                     grouped['卸修補'].push({ ...item, index });
                 }
             });
-            // 輸出
             let html = '';
             Object.entries(grouped).forEach(([group, items]) => {
                 if (items.length > 0) {
@@ -437,7 +480,6 @@
             renderHistory();
         }
 
-        // 初始化
         renderPage();
     </script>
 </body>
